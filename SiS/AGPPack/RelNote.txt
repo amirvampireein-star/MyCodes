@@ -1,0 +1,147 @@
+============
+Release Note
+============
+
+1.12
+     1.Add AMD K8 (V3.0) AGP driver to support for winxp/2000/98/ME.
+     2.fix winXP/2K AGP driver install problem when using 8X card
+       on SiS648.
+     3.fix 8X workaround on newer 648 with PCI-PCI device id 0002.
+     4.fix win98/ME 8X problem after hibernating on SiS648.
+     5.modify AGP8X delay for initialization problems.
+     6.add winXP/2K/98 hibernation restore for SiS755.
+
+
+1.13.01
+     1.use HAL call to avoid HT problem in PCI configuration for
+       winXP/2K.
+     2.avoid invalidate GTLB operation on HT platform for winXP/2K.
+
+1.13.02
+     1.Add an option of AgpForIDE133Set for ATA133 set in setup.ini.
+     2.Add an option of USBRegSet for USB patch set in setup.ini
+     3.update win98/ME AGP driver to 1.13.01
+
+1.13.03
+     1.add sisagp utility to change rate and show AGP information.
+     2.add htpatch for HyperThreading fix.
+     3.fix win2000 uninstall problem(not removing driver).
+
+1.13.03b
+ 
+     1.Fix the bug of showing "SIS IDE DRIVER" after completing uninstallation.
+
+1.13a
+     1. Add MPS3 option for ME install issue.
+     2. Logo driver.
+     
+1.13b
+     1. Add 98/98se check for MSI OHCI issue.
+     
+1.13c
+     1. Update HTpatch v1.1 for SiS650 issue.
+
+1.13.05
+     1.remove 8X workaround code from sisagp.
+     
+1.14.01
+     1. Add setup-s.bat for silent install.
+     2. Fix 98/ME S3/S4 CPU register 90 enable bit issue.
+
+1.14.02
+     1. Fix M650 winXP/2k S3 restart problem.
+     2. Fix AgpSiSSetRate function in winXP/2k driver.
+
+1.15.01
+     1. Add SiS652 support in win98/ME.
+     2. Default initial case to 648 instead of failure in winXP/2K/ME/98.
+     3. SiS648 A0,A1,A2 and SiS655 A0 use R1.12 driver for winXP/2K.
+     
+1.15.02
+     1.Fix the bug(htpatch) of causing keyboard hang in command prompt mode 
+       when OS install without APIC.
+
+1.15.03
+     1.Modify sisagp win98/ME driver uninstall method to fix the problem of
+       not showing correct driver info.
+     2.SiS648 A0,A1,A2 and SiS655 A0 use R1.12 driver for win98/ME.
+
+1.16.01
+     1.Use uagp35 code for win2K/XP to support SiS AGPv3.5 chipset and
+       previous one.
+     2.Add win98/ME AGPv3.5 support.
+     3.Update win98/ME driver install method for OS getting driver info.
+     4.Update agputil to v1.1
+
+1.16.02
+     1.Update htpatch to patch only those systems needed.
+
+1.16.03
+     1.Fix win98 driver setup sisagp.cat not found problem.
+
+1.16.04
+     1.Modify sisagp.inf for win98 driver version display.
+
+1.17.01
+     1.Add SiS760 support in winXP/2k/ME/98 and assume devid 755-790 
+       for AMD K8 in winXP/2k driver.
+     2.Add SiS661 support in winME/98 driver INF.
+
+1.17.02
+     1.Add DEVID 762/663 in winME/98 INF in advance.
+
+1.17.03
+     1.Fix winME/98 aperture size error for 661(AGP35).
+
+1.17.04
+     1.Add SiS K8 AGPID<3.5 support for 760/76X.
+
+1.17d
+     1.Fix for S1/S3 issue in win98/ME.
+
+1.17e
+     1.Fix S1/S3/S4 issue for 651C(AGP3.5) in win98/ME.
+	(Please refer to bug18)
+
+1.19.00
+     1.Support Windows Server 2003 driver(v1.17h).
+     1.Remove Rtlxxx registry function in sisagp for win2003(v1.17h).
+     2.Upgrade InstallShield 7.0 for AGPsetup.
+     3.Remove agputil and htpatch from AGPsetup package.
+
+1.20.00
+     1.Add sisuagp for MS-inbox UAGP35 and GAGP30KX support.
+     2.Fix sisagp Uninstallation issue.
+
+1.21.00
+     1.Add sisagp driver support for 64bit windows.
+
+1.21.01
+     1.Fix 64bit uninstall not removing driver issue.
+     2.Fix Quanta driver uninstall issue.
+     3.Modified Silent install BATCH file setup-s.bat to avoid read-only log.
+
+1.21.02
+     1.Remove debug messages from Setup Script.
+
+1.21.03
+     1.Fix Uninstall issue on win64/32 platform.
+
+1.21b
+     1.Install sisagp instead of MS AGP driver for Server 2003(dual-core issue).
+
+1.21d
+     1.Remove the "Error to find the AGP device" message while removing AGP driver.
+
+1.22.00
+     1.Do not install sisagp under Vista(Use default driver).
+     2.Add SiS770/771/772/671/672 support for winXP2K/2003/64/98ME.
+     3.Combine winXP and win2K driver for logo requirement.
+
+1.22.01
+     1.Remove uninstallation info when sisagp not installed(including Vista).
+     2.Uninstall return to MS inbox driver instead of P2P bridge when inbox driver existed.
+     3.Fix 770 win2K hang when AGP Aperture Size above 256M.(winXP/2003/64 also updated)
+
+1.22.02
+     1.Fix Intel x64 sisagp uninstall failed issue

@@ -1,0 +1,1 @@
+setup -s -f2c:\sisagp.log

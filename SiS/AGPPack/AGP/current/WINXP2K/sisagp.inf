@@ -1,0 +1,127 @@
+;Copyright 1998-2006, Silicon Integrated Systems Corporation
+
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider=%Provider%
+DriverVer=06/16/2006,7.2.0.1220
+CatalogFile=sisagp.cat
+
+
+; =================== Common for all AGP devices =========================
+[DestinationDirs]
+DefaultDestDir = 12        ; DIRID_DRIVERS
+
+[ControlFlags]
+ExcludeFromSelect = PCI\VEN_1039&DEV_0001
+ExcludeFromSelect = PCI\VEN_1039&DEV_0002
+ExcludeFromSelect = PCI\VEN_1039&DEV_0003
+
+[Manufacturer]
+%SIS_MFG%=SIS_AGP, NT.5.1
+
+[AGP_Filter_Reg]
+HKR,,"UpperFilters", 0x00010000,"SISAGP"
+
+[AGP_Filter_Reg2K]
+HKR,,"UpperFilters", 0x00010000,"SISAGP2K"
+
+[pci_ServiceInstallSection]
+DisplayName    = %pci_svcdesc%
+ServiceType    = %SERVICE_KERNEL_DRIVER%
+StartType      = %SERVICE_BOOT_START%
+ErrorControl   = %SERVICE_ERROR_NORMAL%
+ServiceBinary  = %12%\pci.sys
+LoadOrderGroup = "Boot Bus Extender"
+
+; =================== SISAGP for win2K ========================
+[SIS_AGP]
+%SIS.AGP.DeviceDesc%=SISAGP2K_Install,PCI\VEN_1039&DEV_0001
+%SIS.AGP.DeviceDesc2%=SISAGP2K_Install,PCI\VEN_1039&DEV_0002
+%SIS.AGP.DeviceDesc3%=SISAGP2K_Install,PCI\VEN_1039&DEV_0003
+
+[SISAGP2K_Install]
+CopyFiles=SISAGP2K.SYS
+
+[SISAGP2K.SYS]
+SISAGP2K.SYS
+
+[SISAGP2K_Install.HW]
+AddReg = AGP_Filter_Reg2K
+
+[SISAGP2K_Install.Services]
+AddService = SISAGP2K,0,SISAGP2K_ServiceInstallSection
+AddService = pci, %SPSVCINST_ASSOCSERVICE%, pci_ServiceInstallSection
+
+[SISAGP2K_ServiceInstallSection]
+DisplayName    = %SISAGP2K_svcdesc%
+ServiceType    = %SERVICE_KERNEL_DRIVER%
+StartType      = %SERVICE_DEMAND_START%
+ErrorControl   = %SERVICE_ERROR_NORMAL%
+ServiceBinary  = %12%\SISAGP2K.sys
+LoadOrderGroup = PnP Filter
+
+; =================== SISAGP for winXP ========================
+[SIS_AGP.NT.5.1]
+%SIS.AGP.DeviceDesc%=SISAGPXP_Install,PCI\VEN_1039&DEV_0001
+%SIS.AGP.DeviceDesc2%=SISAGPXP_Install,PCI\VEN_1039&DEV_0002
+%SIS.AGP.DeviceDesc3%=SISAGPXP_Install,PCI\VEN_1039&DEV_0003
+
+[SISAGPXP_Install]
+CopyFiles=SISAGPX.SYS
+
+[SISAGPX.SYS]
+SISAGPX.SYS
+
+[SISAGPXP_Install.HW]
+AddReg = AGP_Filter_Reg
+
+[SISAGPXP_Install.Services]
+AddService = SISAGP,0,SISAGPXP_ServiceInstallSection
+AddService = pci, %SPSVCINST_ASSOCSERVICE%, pci_ServiceInstallSection
+
+[SISAGPXP_ServiceInstallSection]
+DisplayName    = %SISAGPXP_svcdesc%
+ServiceType    = %SERVICE_KERNEL_DRIVER%
+StartType      = %SERVICE_DEMAND_START%
+ErrorControl   = %SERVICE_ERROR_NORMAL%
+ServiceBinary  = %12%\SISAGPX.sys
+LoadOrderGroup = PnP Filter
+
+
+;
+; Source file information
+;
+
+[SourceDisksNames.x86]
+1 = %DiskId%,,,""
+
+[SourceDisksFiles]
+SISAGP2K.sys  = 1
+SISAGPX.sys  = 1
+
+; =================== STRINGS and CONSTANTS ========================
+
+[Strings]
+SIS_MFG      = "Silicon Integrated Systems"
+DiskId       = "Silicon Integrated Systems Installation DISK (AGP)"
+Provider     = "SiS"
+SIS.AGP.DeviceDesc = "SiS Accelerated Graphics Port"
+SIS.AGP.DeviceDesc2 = "SiS Accelerated Graphics Port"
+SIS.AGP.DeviceDesc3 = "SiS Accelerated Graphics Port"
+
+;service descriptions
+SISAGPXP_svcdesc = "SiS AGP winXP Filter"
+SISAGP2K_svcdesc = "SiS AGP win2K Filter"
+pci_svcdesc = "PCI Bus Driver"
+
+
+;*******************************************
+;Handy macro substitutions (non-localizable)
+SPSVCINST_ASSOCSERVICE = 0x00000002
+SERVICE_KERNEL_DRIVER  = 1
+SERVICE_BOOT_START     = 0
+SERVICE_DEMAND_START   = 3
+SERVICE_ERROR_NORMAL   = 1

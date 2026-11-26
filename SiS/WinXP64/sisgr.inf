@@ -1,0 +1,1056 @@
+; SiS Windows AMD64 Display INF file
+; Copyright (C) Silicon Integrated Systems Corp. 2005
+; All Rights Reserved
+
+[Version]
+Signature="$Windows NT$"
+Provider=%Provider%
+ClassGUID={4D36E968-E325-11CE-BFC1-08002BE10318}
+Class=Display
+DriverVer=10/26/2010,6.14.10.3930
+CatalogFile=sisgr.cat
+
+[DestinationDirs]
+DefaultDestDir = 11
+SiSGR.Miniport = 12 ; drivers
+SiSkp.Copy     = 12
+SiSGR.Display  = 11 ; system32
+OpenGL.Copy    = 10 ,SysWow64
+OpenGL770.Copy = 10 ,SysWow64
+Coinst.Copy    = 11
+Util.Copy      = 10 ,SysWow64
+SiSGR.Del      = 12
+SiSkp.Del      = 12
+Sys32.Del      = 11
+Wow64.Del      = 10 ,SysWow64
+Win.Del        = 10
+
+;Inf Check
+[SourceDisksNames]
+1 = %DiskId%
+
+[SourceDisksFiles]
+sisgrp.sys=1
+srvkp.sys=1
+sisgrv.dll=1
+sisgl.dll=1
+sisgl770.dll=1
+sis660.bin=1
+sis760.bin=1
+SiSPIns2.dll=1
+SiSBase.dll=1
+SiSParse.dll=1
+SiSInst.dll=1
+
+;
+; Driver information
+;
+[Manufacturer]
+%Mfg% = SiS.Mfg, NTamd64
+
+[SiS.Mfg.NTamd64]
+%SiS.Product.DeviceDesc1%     = Xabre660, PCI\VEN_1039&DEV_6330
+%SiS.Product.DeviceDesc2%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_63301039
+%SiS.Product.DeviceDesc3%     = SiS6350 , PCI\VEN_1039&DEV_6351
+%SiS.Product.DeviceDesc4%     = SiS6350 , PCI\VEN_1039&DEV_6351&SUBSYS_63511039
+%Vender.Acer.DeviceDesc1%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_00481025
+%Vender.Acer.DeviceDesc2%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_00491025
+%Vender.Acer.DeviceDesc3%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_00821025
+%Vender.Acer.DeviceDesc4%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_00831025
+%Vender.AOpen.DeviceDesc1%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0351A0A0
+%Vender.AOpen.DeviceDesc2%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0352A0A0
+%Vender.AOpen.DeviceDesc3%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0353A0A0
+%Vender.AOpen.DeviceDesc4%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0355A0A0
+%Vender.AOpen.DeviceDesc5%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0408A0A0
+%Vender.AOpen.DeviceDesc6%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0409A0A0
+%Vender.AOpen.DeviceDesc7%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0466A0A0
+%Vender.AOpen.DeviceDesc8%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_04EDA0A0
+%Vender.AOpen.DeviceDesc9%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_04EEA0A0
+%Vender.AOpen.DeviceDesc10%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0500A0A0
+%Vender.AOpen.DeviceDesc11%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_033FA0A0
+%Vender.AOpen.DeviceDesc12%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0580A0A0
+%Vender.ASRock.DeviceDesc1%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_06611849
+%Vender.ASRock.DeviceDesc2%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_63301849
+%Vender.ASRock.DeviceDesc3%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_63311849
+%Vender.ASRock.DeviceDesc4%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_63291849
+%Vender.ASRock.DeviceDesc5%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_76011849
+%Vender.ASRock.DeviceDesc6%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_07611849
+%Vender.ASUS.DeviceDesc1%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_19211043
+%Vender.ASUS.DeviceDesc2%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_81131043
+%Vender.ASUS.DeviceDesc3%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_814F1043
+%Vender.ASUS.DeviceDesc4%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_81591043
+%Vender.ASUS.DeviceDesc5%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_11021043
+%Vender.ASUS.DeviceDesc6%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_818E1043
+%Vender.ASUS.DeviceDesc7%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_C0131631
+%Vender.ASUS.DeviceDesc8%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_82291043
+%Vender.ASUS.DeviceDesc9%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_822A1043
+%Vender.ASUS.DeviceDesc10%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_82051043
+%Vender.ASUS.DeviceDesc11%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_14521043
+%Vender.Bioster.DeviceDesc1%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_13061565
+%Vender.Clevo.DeviceDesc1%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_04801558
+%Vender.Clevo.DeviceDesc2%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_03601558
+%Vender.Compal.DeviceDesc1%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_001214C0
+%Vender.DFI.DeviceDesc1%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_100215BD
+%Vender.ECS.DeviceDesc1%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0F521019
+%Vender.ECS.DeviceDesc2%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0A421019
+%Vender.ECS.DeviceDesc3%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0A441019
+%Vender.ECS.DeviceDesc4%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_18031019
+%Vender.ECS.DeviceDesc5%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_18061019
+%Vender.ECS.DeviceDesc6%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_18141019
+%Vender.ECS.DeviceDesc7%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_18151019
+%Vender.ECS.DeviceDesc8%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_18911019
+%Vender.ECS.DeviceDesc9%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B021019
+%Vender.ECS.DeviceDesc10%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B101019
+%Vender.ECS.DeviceDesc11%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B131019
+%Vender.ECS.DeviceDesc12%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B141019
+%Vender.ECS.DeviceDesc13%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B151019
+%Vender.ECS.DeviceDesc14%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B161019
+%Vender.ECS.DeviceDesc15%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B261019
+%Vender.ECS.DeviceDesc16%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B271019
+%Vender.ECS.DeviceDesc17%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B281019
+%Vender.ECS.DeviceDesc18%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B291019
+%Vender.ECS.DeviceDesc19%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1B371019
+%Vender.ECS.DeviceDesc20%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0F611019
+%Vender.ECS.DeviceDesc21%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_1E681019
+%Vender.ECS.DeviceDesc22%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0F611019
+%Vender.ECS.DeviceDesc23%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0F621019
+%Vender.ECS.DeviceDesc24%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_208117C0
+%Vender.Epox.DeviceDesc1%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_20071695
+%Vender.Epox.DeviceDesc2%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_20081695
+%Vender.Epox.DeviceDesc3%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_200D1695
+%Vender.Epox.DeviceDesc4%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_200E1695
+%Vender.F.DeviceDesc1%        = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_125810CF
+%Vender.F.DeviceDesc2%        = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_12C410CF
+%Vender.F.DeviceDesc3%        = SiS6350 , PCI\VEN_1039&DEV_6351&SUBSYS_141D10CF
+%Vender.F.DeviceDesc4%        = SiS6350 , PCI\VEN_1039&DEV_6351&SUBSYS_141E10CF
+%Vender.FIC.DeviceDesc1%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_34301509
+%Vender.FIC.DeviceDesc2%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_81301509
+%Vender.FIC.DeviceDesc3%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_10751734
+%Vender.Foxconn.DeviceDesc1%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C08105B
+%Vender.Foxconn.DeviceDesc2%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C4B105B
+%Vender.Foxconn.DeviceDesc3%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C4C105B
+%Vender.Foxconn.DeviceDesc4%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C4D105B
+%Vender.Foxconn.DeviceDesc5%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C4E105B
+%Vender.Foxconn.DeviceDesc6%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C50105B
+%Vender.Foxconn.DeviceDesc7%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C51105B
+%Vender.Foxconn.DeviceDesc8%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C52105B
+%Vender.Foxconn.DeviceDesc9%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C53105B
+%Vender.Foxconn.DeviceDesc10% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C54105B
+%Vender.Foxconn.DeviceDesc11% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C55105B
+%Vender.Foxconn.DeviceDesc12% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C56105B
+%Vender.Foxconn.DeviceDesc13% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C57105B
+%Vender.Foxconn.DeviceDesc14% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C58105B
+%Vender.Foxconn.DeviceDesc15% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C59105B
+%Vender.Foxconn.DeviceDesc16% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C5D105B
+%Vender.Foxconn.DeviceDesc17% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C5E105B
+%Vender.Foxconn.DeviceDesc18% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C60105B
+%Vender.Foxconn.DeviceDesc19% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C61105B
+%Vender.Foxconn.DeviceDesc20% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C62105B
+%Vender.Foxconn.DeviceDesc21% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C65105B
+%Vender.Foxconn.DeviceDesc22% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C91105B
+%Vender.Foxconn.DeviceDesc23% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C92105B
+%Vender.Foxconn.DeviceDesc24% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C93105B
+%Vender.Foxconn.DeviceDesc25% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C66105B
+%Vender.Foxconn.DeviceDesc26% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C67105B
+%Vender.Foxconn.DeviceDesc27% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C68105B
+%Vender.Foxconn.DeviceDesc28% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C69105B
+%Vender.Foxconn.DeviceDesc29% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C6A105B
+%Vender.Foxconn.DeviceDesc30% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C6B105B
+%Vender.Foxconn.DeviceDesc31% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C6C105B
+%Vender.Foxconn.DeviceDesc32% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C6D105B
+%Vender.Foxconn.DeviceDesc33% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C6E105B
+%Vender.Foxconn.DeviceDesc34% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C6F105B
+%Vender.Foxconn.DeviceDesc35% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C96105B
+%Vender.Foxconn.DeviceDesc36% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C97105B
+%Vender.Foxconn.DeviceDesc37% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C98105B
+%Vender.Foxconn.DeviceDesc38% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C99105B
+%Vender.Foxconn.DeviceDesc39% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0C9A105B
+%Vender.FSC.DeviceDesc1%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_106C1734
+%Vender.FSC.DeviceDesc2%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_10461734
+%Vender.FSC.DeviceDesc3%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_10991734
+%Vender.Gigabyte.DeviceDesc1% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_D0001458
+%Vender.Gigabyte.DeviceDesc2% = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_03001014
+%Vender.Gigabyte.DeviceDesc3% = SiS6350 , PCI\VEN_1039&DEV_6351&SUBSYS_E2011631
+%Vender.HP.DeviceDesc1%       = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_2A06103C
+%Vender.HP.DeviceDesc2%       = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_3020103C
+%Vender.Lenovo.DeviceDesc1%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_507017AA
+%Vender.Lenovo.DeviceDesc2%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_100017AA
+%Vender.Lenovo.DeviceDesc3%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_100A17AA
+%Vender.Lenovo.DeviceDesc4%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_101617AA
+%Vender.Lenovo.DeviceDesc5%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_101717AA
+%Vender.Lenovo.DeviceDesc6%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_101817AA
+%Vender.Lenovo.DeviceDesc7%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_101917AA
+%Vender.Lenovo.DeviceDesc8%   = SiS6350 , PCI\VEN_1039&DEV_6351&SUBSYS_306917AA
+%Vender.LiteON.DeviceDesc1%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_218914A4
+%Vender.LiteON.DeviceDesc2%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_102714A4
+%Vender.MSI.DeviceDesc1%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_00411462
+%Vender.MSI.DeviceDesc2%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_00611462
+%Vender.MSI.DeviceDesc3%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_54081462
+%Vender.MSI.DeviceDesc4%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_79101462
+%Vender.MSI.DeviceDesc5%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_70601462
+%Vender.MSI.DeviceDesc6%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_54081462
+%Vender.MSI.DeviceDesc7%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_01111462
+%Vender.MSI.DeviceDesc8%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_00911462
+%Vender.MSI.DeviceDesc9%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_70821462
+%Vender.MSI.DeviceDesc10%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_71121462
+%Vender.MSI.DeviceDesc11%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_72081462
+%Vender.MSI.DeviceDesc12%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_72811462
+%Vender.MTC.DeviceDesc1%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_85991071
+%Vender.MTC.DeviceDesc2%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_C0041631
+%Vender.NEC.DeviceDesc1%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_825F1033
+%Vender.NEC.DeviceDesc2%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_82851033
+%Vender.NEC.DeviceDesc3%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_830E1033
+%Vender.NEC.DeviceDesc4%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_831E1033
+%Vender.NECCI.DeviceDesc1%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_10041631
+%Vender.NECCI.DeviceDesc2%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_C00D1631
+%Vender.NECCI.DeviceDesc3%    = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_E0301631
+%Vender.Quanta.DeviceDesc1%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0756152D
+%Vender.Quanta.DeviceDesc2%   = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_0759152D
+%Vender.Quanta.DeviceDesc3%   = SiS6350 , PCI\VEN_1039&DEV_6351&SUBSYS_C2021631
+%Vender.Shuttle.DeviceDesc1%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_50471297
+%Vender.Sony.DeviceDesc1%     = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_81B4104D
+%Vender.TCL.DeviceDesc1%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_300119DB
+%Vender.USI.DeviceDesc1%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_101617AA
+%Vender.USI.DeviceDesc2%      = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_180C147B
+%Vender.UniWill.DeviceDesc1%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_50401584
+%Vender.UniWill.DeviceDesc2%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_50411584
+%Vender.UniWill.DeviceDesc3%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_50431584
+%Vender.Wistron.DeviceDesc1%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_206C17C0
+%Vender.Wistron.DeviceDesc2%  = Xabre660, PCI\VEN_1039&DEV_6330&SUBSYS_208117C0
+%Vender.Dell.DeviceDesc1%     = SiS6350 , PCI\VEN_1039&DEV_6351&SUBSYS_02811028
+%Vender.Dell.DeviceDesc2%     = SiS6350 , PCI\VEN_1039&DEV_6351&SUBSYS_02C31028
+%Vender.Pegatron.DeviceDesc1% = SiS6350 , PCI\VEN_1039&DEV_6351&SUBSYS_20141B0A
+
+;
+; General installation section
+;
+[Xabre660]
+CopyFiles=SiSGR.Miniport, SiSGR.Display, OpenGL.Copy, Util.Copy, SiSkp.Copy
+
+[SiS6350]
+CopyFiles=SiSGR.Miniport, SiSGR.Display, OpenGL770.Copy, Util.Copy, SiSkp.Copy
+
+;
+; File sections
+;
+[SiSGR.Miniport]
+sisgrp.sys
+
+[SiSkp.Copy]
+srvkp.sys
+
+[SiSGR.Display]
+sisgrv.dll
+sis660.bin
+sis760.bin
+
+[OpenGL.Copy]
+sisgl.dll
+
+[OpenGL770.Copy]
+sisgl770.dll
+
+[Coinst.Copy]
+SiSPIns2.dll
+
+;For Information Page
+[Util.Copy]
+sisgrv.dll
+SiSPIns2.dll
+SiSBase.dll
+SiSParse.dll
+SiSInst.dll
+
+[SiSGR.Del]
+sisgrp.sys,,,1
+
+[SiSkp.Del]
+srvkp.sys,,,1
+
+[Sys32.Del]
+sisgrv.dll,,,1
+sis660.bin,,,1
+sis760.bin,,,1
+SiSPIns2.dll,,,1
+
+[Wow64.Del]
+sisgl.dll,,,1
+sisgl770.dll,,,1
+SiSBase.dll,,,1
+SiSParse.dll,,,1
+SiSInst.dll,,,1
+sisgrv.dll,,,1
+SiSPIns2.dll,,,1
+
+[Win.Del]
+InstFunc.dll,,,1
+InstFunc.exe,,,1
+
+; for driver uninstall
+[Driver.Uninst]
+DelFiles=SiSGR.Del, SiSkp.Del, Sys32.Del, Wow64.Del, Win.Del
+DelReg=Uninstall_DelReg
+
+[Uninstall_DelReg]
+HKLM,System\CurrentControlSet\Services\SiS315
+HKLM,System\CurrentControlSet\Services\Xabre
+HKLM,SYSTEM\CurrentControlSet\Hardware Profiles\Current\System\CurrentControlSet\SERVICES\SiS315
+HKLM,System\CurrentControlSet\Services\SiSkp
+HKLM,SOFTWARE\SiS
+HKLM,SOFTWARE\Microsoft\Windows\CurrentVersion\Run, SiSPower
+HKCR,CLSID\{A9F793C1-4ECB-11d5-9B30-1000060995E9}
+
+;
+; Xabre660 Service Installation
+;
+[Xabre660.Services]
+AddService = SiS315, 0x00000002, SiSGR_Service_Inst, SiSGR_EventLog_Inst
+AddService = SiSkp, 0x00000001, SiSkp_Service_Inst
+
+;
+; Xabre660 Software Installation
+;
+[Xabre660.SoftwareSettings]
+AddReg = Xabre660_SoftwareDeviceSettings
+AddReg = ModeReg_AddReg
+AddReg = 2DOption_AddReg
+AddReg = 2D660_AddReg
+AddReg = DVDOption_AddReg
+AddReg = APOption_AddReg
+AddReg = 3DOption_AddReg
+AddReg = 3D660_AddReg
+AddReg = OpenGL_AddReg
+AddReg = Util_AddReg
+AddReg = DefaultSettings_AddReg
+
+[Xabre660_SoftwareDeviceSettings]
+HKR,, SWKeyIdentifier, %REG_MULTI_SZ%, Xabre
+HKR,,SiS.DD.Table,%REG_DWORD%,0x00000000
+
+
+;
+; SiS6350 Service Installation
+;
+[SiS6350.Services]
+AddService = SiS315, 0x00000002, SiSGR_Service_Inst, SiSGR_EventLog_Inst
+AddService = SiSkp, 0x00000001, SiSkp_Service_Inst
+
+;
+; SiS6350 Software Installation
+;
+[SiS6350.SoftwareSettings]
+AddReg = SiS6350_SoftwareDeviceSettings
+AddReg = ModeReg_AddReg
+AddReg = 2DOption_AddReg
+AddReg = 2D660_AddReg
+AddReg = DVDOption_AddReg
+AddReg = APOption_AddReg
+;AddReg = 3DOption_AddReg
+AddReg = 3D770_AddReg
+AddReg = OpenGL770_AddReg
+AddReg = Util_AddReg
+AddReg = DefaultSettings_AddReg
+
+[SiS6350_SoftwareDeviceSettings]
+HKR,, SWKeyIdentifier, %REG_MULTI_SZ%, Xabre
+HKR,,SiS.DD.Table,%REG_DWORD%,0x00000000
+
+
+;
+; Common Section
+;
+[SiSkp_Service_Inst] ;for srvkp.sys
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 1                  ; SERVICE_SYSTEM_START
+ErrorControl   = 0                  ; SERVICE_ERROR_IGNORE
+ServiceBinary  = %12%\srvkp.sys
+
+[SiSGR_EventLog_Inst]
+AddReg = SiSGR_EventLog_AddReg
+
+[SiSGR_EventLog_AddReg]
+HKR,,EventMessageFile,0x00020000,"%SystemRoot%\System32\IoLogMsg.dll;%SystemRoot%\System32\drivers\sisgrp.sys"
+HKR,,TypesSupported,0x00010001,7
+
+[SiSGR_Service_Inst]
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 1                  ; SERVICE_SYSTEM_START
+ErrorControl   = 0                  ; SERVICE_ERROR_IGNORE
+LoadOrderGroup = Video
+ServiceBinary  = %12%\sisgrp.sys
+
+[3D325_AddReg]
+HKR,,SiS.3D.TnLEnable,%REG_DWORD%,0x00000000
+
+
+[3D330_AddReg]
+HKR,,SiS.3D.TnLEnable,%REG_DWORD%,0x00000001
+
+[3D660_AddReg]
+HKR,,SiS.3D.BufferMode,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.TnLEnable,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.ArbiterSafeMode,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.SafeReadReg,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.Notify,%REG_DWORD%,0x00000001
+
+[3D770_AddReg]
+HKR,,"SiS.3D.MaxFrameQueued",%REG_DWORD%,0x00000003
+
+HKR,,"SiS.3D.3DCOMMAND",%REG_DWORD%,0x00000003
+HKR,,"SiS.3D.AutoMipMap",%REG_DWORD%,0x00000000
+;HKR,,"SiS.3D.CoarseZ",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.CoarseZMode",%REG_DWORD%,0x00000010
+;HKR,,"SiS.3D.CoarseZEnable",%REG_DWORD%,0x00000000
+;HKR,,"SiS.3D.Fast2Tex",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FSAA",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FSAAMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.StereoMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Swizzle",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TnLQueue",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TnLEnable",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.VBLocal",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.VBManage",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisTexGen",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.GL_Multi_Texture",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.HWSwizzle",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ArbiterSafeMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TexTurboMode",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.ChannelASet",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ChannelBSet",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Disable3DArbit",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.BufferMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoZTxsMerge",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.AlphaBlendTurboMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.LightTurboMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TestDMA",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SafeReadReg",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ExecuteMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PTS_Drop",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PT_Drop",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.P_Drop",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TnLGuardBand",%REG_DWORD%,0x00000004
+HKR,,"SiS.3D.AGPReq",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoTileZTest",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.LeakCommand",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ChannelDetect",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.VBDepth",%REG_DWORD%,0x00000002
+HKR,,"SiS.3D.C32Z32",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.MultiStreams",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.MultiSample",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.HALGuardBandLeft",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.HALGuardBandTop",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.HALGuardBandRight",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.HALGuardBandBottom",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ZSwizzle",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ZSwizzleMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PerfPitch",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.CZPitch",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.VertexBlend",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SWVS",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.PureDev",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisableLOD",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.QualityTex",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.CompressTex",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoColorPerspective",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.VSyncOff",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.GL_Pixel_Format",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DACLevel",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SmartDrive",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.LODCompensate",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SWVP_Guardband",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DACLevel2",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.OverClock",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NonPow2",%REG_DWORD%,0x00000001
+
+HKR,,"SiS.3D.CmdMode",%REG_DWORD%,0x00000003
+HKR,,"SiS.3D.QualityCompMode",%REG_DWORD%,0x00000000
+;HKR,,"SiS.3D.HWVS",%REG_DWORD%,0x00000002
+HKR,,"SiS.3D.HWPS",%REG_DWORD%,0x00000002
+HKR,,"SiS.3D.FrontBuffer",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FrontBufferZ",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.VSScheduler",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Chip342",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SepAlphaBld",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.VBDepthDual",%REG_DWORD%,0x00000004
+HKR,,"SiS.3D.Fast1Tex",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Slow1Tex",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.VSyncOff",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.All3DClear",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoShiftIndex",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.BorderFmtSafe",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PerfDriver",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ZWCompress",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ColorWCompress",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.S8Z24NoZR",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.Debug_VS",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.JumpFrame",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.JumpMode",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.NonPowTwoTex",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisVolumeLODBias",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FileDDIDump",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ParserDrop",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TnLDrop",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SetupDrop",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.EGen4POnly",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.EG4PSel",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisGuard",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Gamma",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ParserIssue",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.VS_m4x4",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.EnClipDest",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.TexBestPitch",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.EnRender2TexPow2",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisAnisoFilter",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.CubeToSphere",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DumpQueueMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualSingle",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualReset",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualNoTurbo",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.DualSnoopMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualTexBlt",%REG_DWORD%,0x00000003
+HKR,,"SiS.3D.Chip341",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Power3D",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Desktop3D",%REG_DWORD%,0x00000000
+;HKR,,"SiS.3D.MaxAnisotropic",%REG_DWORD%,0x00000000
+;HKR,,"SiS.3D.PSTOFF",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.WaitIdle",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PSTOOneStage",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.BackTexNum",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TxL2Polling",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.StencilMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TSSARGTEMP",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.MaxTexture",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ShiftZbuffer",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.IdelTimer",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DBGMSG",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.And_8b00",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8b04",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8b08",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8b10",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8bb0",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8cdc",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_9400",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_9404",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_9408",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_940C",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_9410",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8e08",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8e00",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8aa8",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8ce0",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.And_8fc4",%REG_DWORD%,0xffffffff
+HKR,,"SiS.3D.Or_8aa8",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8b00",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8b04",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8b08",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8b10",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8bb0",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8cdc",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_9400",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_9404",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_9408",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_940C",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_9410",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8e08",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8e00",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8ce0",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Or_8fc4",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PollingTime",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisAuto4PSet",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.DCTPatch",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.NoColorClr",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Tex2x2",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoTriLinear",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoABlendIfATest",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ForceSwizzle",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PSInitLoad",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisTwoSideStencil",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoZTxMerge",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.ShadowZPass",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.XG40_a1",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DropDrawMode",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.XG41_Test",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SkipFrame",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Reorder",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoPatchGame",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.OpenSkipFrame",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisableNPatchCaps",%REG_DWORD%,0x00000006
+HKR,,"SiS.3D.DualTexLoadMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualNoWait",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Mk3G3Test1",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Mk3G3Color0",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Mk3G3Color1",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Force342",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ForceCZ14Bit",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Enable1TJump",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.EnCSTurboMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualMaxFrameQueued",%REG_DWORD%,0x00000004
+HKR,,"SiS.3D.EnAlphaChannel",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.PrintScreen",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.Query",%REG_DWORD%,0x00000000
+;HKR,,"SiS.3D.PSTOFFMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FastTrilinear",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FSAASameZ",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FSAAColorLinear",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FSAACZRTexLinear",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FastAniso",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TrilinearTex",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ZTestMask",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FSAAdx",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FSAAdy",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoinitS",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.LodAniso",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.BenchMark",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FSAABench",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualEnable",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualForce",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.LODEnable",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SrcXGuardBand",%REG_DWORD%,0x46800000
+HKR,,"SiS.3D.SrcYGuardBand",%REG_DWORD%, 0x46800000
+HKR,,"SiS.3D.ReserveZ",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PackZ",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoSWSwizzle",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PSReorder",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.AlwaysPSUDCZFMT",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualMenu",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.XG40_Check1",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.GSScheduler",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.XG45Test",%REG_DWORD%,0x00009810
+HKR,,"SiS.3D.NotUseAGPSurf",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.XG40_Check2",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.XG40_Check3",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TexLodBias",%REG_DWORD%,0x3ee66666
+HKR,,"SiS.3D.StereoNoResetZ",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TileSize",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TnlPPDR",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SetTOPCode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SeeThrough",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DstFactor",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SrcFactor",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisLTMCrt",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisableGLPath",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.AlphaTestPatch",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.CZBlkSize",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.RenderBlkSize",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FSAA2D",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoZTest",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoZWrite",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FrontBuffZ",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FileDumpSize",%REG_DWORD%,0x00000064
+HKR,,"SiS.3D.ListStart",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ListEnd",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DumpStart",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DumpStep",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Disable2D",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisableClipPlane",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisableCull",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisableReject",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisablePSPixelNum",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FillMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.RTLinearFirst",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ViewportDiv",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.LightSet_Or",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.LightSet_And",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.MergeGLPath",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoLight",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoTexCache",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoCompressStage",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoFog",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoFogPerspective",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PSSafeMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SetupROMSel",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SetupROMStage1",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.SetupROMStage2",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TnLProjectedTex",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.XYLowR",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ZUnit",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoMansLand",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualPatch",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoAlphaBlend",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.NoTexture",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.RedBlue",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.MaxVtxCnt",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DumpVidMem",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DumpApInfo",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.D3DVertexBufferSize",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ShowListLaps",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ApInfo",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.WaitEngineIdle",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.TexSamplingMode",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.ZPost_PerfSet",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.TexturePalette",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PsAnalysis",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DualWindow",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Analysis",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.AllFix",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.AutoGenMipMap",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.RSQQuality",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.FFPS_NoScheduler",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.DisablePreTnRdy",%REG_DWORD%,0x00000001
+
+;For 671 keys
+HKR,,"SiS.3D.Enable_771_NoPreClrTn",%REG_DWORD%,0x00000001
+HKR,,"SiS.3D.Enable_Initial_Read",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.Enable_InitR_Turbo",%REG_DWORD%,0x00000000
+HKR,,"SiS.3D.PatchFloat2Fix",%REG_DWORD%,0x00000002
+HKR,,"SiS.3D.FFPSCache_671",%REG_DWORD%,0x00000000
+
+[3DOption_AddReg]
+;770 doesn't add these registry
+;3D option for non-770
+HKR,,SiS.3D.3DCOMMAND,%REG_DWORD%,0x00000003
+HKR,,SiS.3D.AAEnable,%REG_DWORD%,0x00000000
+HKR,,SiS.3D.ArbFavEng,%REG_DWORD%,0x00000000
+HKR,,SiS.3D.ClearCZTwice,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.ColorCache,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.FavorEng,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.FrontBuffer,%REG_DWORD%,0x00000000
+HKR,,SiS.3D.GL_FSAA,%REG_DWORD%,0x00000000
+HKR,,SiS.3D.GL_FSAAMode,%REG_DWORD%,0x00000000
+HKR,,SiS.3D.GL_Multi_Texture,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.GL_Use_16_ZBuf,%REG_DWORD%,0x00000000
+HKR,,SiS.3D.GlassesWire,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.HKDaemon,%REG_DWORD%,0x00000180
+HKR,,SiS.3D.L2Cache,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.MaxFrameQueued,%REG_DWORD%,0x00000003
+HKR,,SiS.3D.SOffset,%REG_DWORD%,0x00000004
+HKR,,SiS.3D.SScale,%REG_DWORD%,0x00000004
+HKR,,SiS.3D.Stereo,%REG_DWORD%,0x00000000
+HKR,,SiS.3D.TexCache,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.TnLCmdQueueSize,%REG_DWORD%, 0x00524288
+HKR,,SiS.3D.ZBias,%REG_DWORD%,0x00000000
+HKR,,SiS.3D.ZCache,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.ZPreTest,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.ZTest,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.ZWrite,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.ColorEquNoWrite,%REG_DWORD%,0x00000001
+HKR,,SiS.3D.DACLevel2,%REG_DWORD%,0x00000001
+;for srvkp.sys
+HKR,,SiS.3D.Table,%REG_DWORD%,0x00000000
+
+[APOption_AddReg]
+HKR,, SiS.Utility.ServiceName,          %REG_SZ%, SiS315
+HKR,, SiS.Utility.EnableStretchBlt,       %REG_DWORD%, 0x00000001
+HKR,, SiS.Utility.StretchBltTmpBufSize,   %REG_DWORD%, 0x00000000
+HKR,, SiS.Utility.YUVBlt,                %REG_DWORD%, 0x00000001
+HKR,, SiS.Utility.2Overlay,              %REG_DWORD%, 0x00000001
+HKR,, SiS.Utility.Overlay1withCRT1,      %REG_DWORD%, 0x00000000
+HKR,, SiS.Utility.OverlayEnable,	 %REG_DWORD%, 0x00000001
+HKR,, SiS.VIDEO.Disable760UMADualviewDVDPatch,              %REG_DWORD%, 0x0000001
+
+[DVDOption_AddReg]
+HKR,,SiS.VIDEO.EnableDXVA,%REG_DWORD%,0x00000001
+HKR,,SiS.VIDEO.VBBlendingMode,%REG_DWORD%,0x00000002
+HKR,,SiS.VIDEO.SmartVision,%REG_DWORD%,0x00000000
+HKR,,SiS.DVD.SWRelay,%REG_DWORD%,0x00000000
+HKR,,SiS.VIDEO.DCTOverlay64OSPatch,%REG_DWORD%,0x00000001
+
+[2D660_AddReg]
+HKR,, SiS.2D.D3DVertexBufferSize,        %REG_DWORD%, 0x00400000
+
+
+[ModeReg_AddReg]
+HKR,, 2D_OEMSetup, %REG_MULTI_SZ%, 0
+HKR,, 2D_BI01,     %REG_MULTI_SZ%, 60.72.75.85.100.120.160.200
+HKR,, 2D_BI03,     %REG_MULTI_SZ%, 60.72.75.85.100.120.160.200
+HKR,, 2D_BI05,     %REG_MULTI_SZ%, 60.72.75.85.100.120.160.200
+HKR,, 2D_BI11,     %REG_MULTI_SZ%, 56.60.72.75.85.100.120.160
+HKR,, 2D_BI13,     %REG_MULTI_SZ%, 56.60.72.75.85.100.120.160
+HKR,, 2D_BI15,     %REG_MULTI_SZ%, 56.60.72.75.85.100.120.160
+HKR,, 2D_BI21,     %REG_MULTI_SZ%, .60.70.75.85.100.120
+HKR,, 2D_BI23,     %REG_MULTI_SZ%, .60.70.75.85.100.120
+HKR,, 2D_BI25,     %REG_MULTI_SZ%, .60.70.75.85.100.120
+HKR,, 2D_BI31,     %REG_MULTI_SZ%, .60.75.85
+HKR,, 2D_BI33,     %REG_MULTI_SZ%, .60.75.85
+HKR,, 2D_BI35,     %REG_MULTI_SZ%, .60.75.85
+HKR,, 2D_BI41,     %REG_MULTI_SZ%, 60.65.70.75.85
+HKR,, 2D_BI43,     %REG_MULTI_SZ%, 60.65.70.75.85
+HKR,, 2D_BI45,     %REG_MULTI_SZ%, 60.65.70.75.85
+HKR,, 2D_BI51,     %REG_MULTI_SZ%, 60.65.70.75.85
+HKR,, 2D_BI53,     %REG_MULTI_SZ%, 60.65.70.75.85
+HKR,, 2D_BI55,     %REG_MULTI_SZ%, 60.65.70.75.85
+HKR,, 2D_BI61,     %REG_MULTI_SZ%, 60.65.70.75
+HKR,, 2D_BI63,     %REG_MULTI_SZ%, 60.65.70.75
+HKR,, 2D_BI65,     %REG_MULTI_SZ%, 60.65.70.75
+HKR,, 2D_BI71,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BI73,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BI75,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BI91,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BI93,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BI95,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIC1,     %REG_MULTI_SZ%, 60.75
+HKR,, 2D_BIC3,     %REG_MULTI_SZ%, 60.75
+HKR,, 2D_BIC5,     %REG_MULTI_SZ%, 60.75
+HKR,, 2D_BID1,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BID3,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BID5,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIE1,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIE3,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIE5,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIF1,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIF3,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIF5,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIH1,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIH3,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIH5,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIK1,     %REG_MULTI_SZ%, 60.75.85
+HKR,, 2D_BIK3,     %REG_MULTI_SZ%, 60.75.85
+HKR,, 2D_BIK5,     %REG_MULTI_SZ%, 60.75.85
+HKR,, 2D_BIL1,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIL3,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIL5,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIP1,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIP3,     %REG_MULTI_SZ%, 60
+HKR,, 2D_BIP5,     %REG_MULTI_SZ%, 60
+
+HKR,, InstalledDisplayDrivers, %REG_MULTI_SZ%, SiSGRV
+HKR,, VgaCompatible,           %REG_DWORD%, 0
+HKR,, PruningMode,             %REG_DWORD%, 0
+
+
+[2DOption_AddReg]
+HKR,, SiS.2D.HWCmdQueueSize,             %REG_DWORD%, 0x00400000
+HKR,, SiS.2D.HWCmdQueueType,             %REG_DWORD%, 0x00000001
+HKR,, SiS.2D.HW2DPostWrite,              %REG_DWORD%, 0x00000001
+HKR,, SiS.2D.Alloc3DBufferEx,            %REG_DWORD%, 0x00400000
+HKR,, SiS.Common.UnifyUI,                %REG_DWORD%, 0x00000001
+HKR,, SiS.2D.MAPTABLE,                   %REG_BINARY%,28,00,00,00,61,00,00,00,62,00,00,00,62,00,00,00,64,00,00,00,64,00,00,00,64,00,00,00,64,00,00,00,28,00,00,00,19,00,00,00,1a,00,00,00,1a,00,00,00,1c,00,00,00,19,00,00,00,1a,00,00,00,1a,00,00,00 
+HKR,, SiS.2D.EnableCRTMode1920_1200,     %REG_DWORD%, 0x00000001
+HKR,, SiS.2D.EnableCRTMode1440_900,      %REG_DWORD%, 0x00000001
+HKR,, SiS.2D.EnableCRTMode960_600,      %REG_DWORD%, 0x00000001
+HKR,, SiS.2D.EnableCRTMode1280_800,      %REG_DWORD%, 0x00000001
+HKR,, SiS.2D.EnableCRTMode1680_1050,      %REG_DWORD%, 0x00000001
+HKR,, SiS.2D.EnableLCDMode1280_800,      %REG_DWORD%, 0x00000001
+HKR,, SiS.2D.EnableCOPP,                 %REG_DWORD%, 0x00000000
+HKR,, SiS.2D.HDMIOutput,                 %REG_DWORD%, 0x00000000
+
+[DefaultSettings_AddReg]
+HKR,, "Attach.RelativeX", %REG_DWORD%, 0
+HKR,, "Attach.RelativeY", %REG_DWORD%, 0
+HKR,, "Attach.ToDesktop", %REG_DWORD%, 0
+HKR,, "DefaultSettings.Flags", %REG_DWORD%, 0
+HKR,, "DefaultSettings.VRefresh", %REG_DWORD%, 60
+HKR,, "DefaultSettings.XPanning", %REG_DWORD%, 0
+HKR,, "DefaultSettings.YPanning", %REG_DWORD%, 0
+HKR,, "DefaultSettings.BitsPerPel", %REG_DWORD%, 32
+HKR,, "DefaultSettings.XResolution", %REG_DWORD%, 1024
+HKR,, "DefaultSettings.YResolution", %REG_DWORD%, 768
+
+[OpenGL_AddReg]
+HKLM,"Software\WoW6432Node\Microsoft\Windows NT\CurrentVersion\OpenGLDrivers\sisgl",dll,,"sisgl.dll"
+HKLM,"Software\WoW6432Node\Microsoft\Windows NT\CurrentVersion\OpenGLDrivers\sisgl",DriverVersion,%REG_DWORD%,0x00000001
+HKLM,"Software\WoW6432Node\Microsoft\Windows NT\CurrentVersion\OpenGLDrivers\sisgl",Flags,%REG_DWORD%,0x00000001
+HKLM,"Software\WoW6432Node\Microsoft\Windows NT\CurrentVersion\OpenGLDrivers\sisgl",Version,%REG_DWORD%,0x00000002
+
+[OpenGL770_AddReg]
+HKLM,"Software\WoW6432Node\Microsoft\Windows NT\CurrentVersion\OpenGLDrivers\sisgl",dll,,"sisgl770.dll"
+HKLM,"Software\WoW6432Node\Microsoft\Windows NT\CurrentVersion\OpenGLDrivers\sisgl",DriverVersion,%REG_DWORD%,0x00000001
+HKLM,"Software\WoW6432Node\Microsoft\Windows NT\CurrentVersion\OpenGLDrivers\sisgl",Flags,%REG_DWORD%,0x00000001
+HKLM,"Software\WoW6432Node\Microsoft\Windows NT\CurrentVersion\OpenGLDrivers\sisgl",Version,%REG_DWORD%,0x00000002
+
+[Util_AddReg]
+HKCR,CLSID\{A9F793C1-4ECB-11d5-9B30-1000060995E9}\InProcServer32,,,"%10%\sisumgr.dll"
+HKCR,CLSID\{A9F793C1-4ECB-11d5-9B30-1000060995E9}\InProcServer32,ThreadingModel,,Apartment
+HKLM,"Software\Microsoft\Windows\CurrentVersion\Controls Folder\Display\shellex\PropertySheetHandlers\SiS Utility Manager",,,"{A9F793C1-4ECB-11d5-9B30-1000060995E9}"
+
+[Xabre660.CoInstallers]
+CopyFiles=Coinst.Copy
+AddReg=CoInstallers_AddReg
+
+[SiS6350.CoInstallers]
+CopyFiles=Coinst.Copy
+AddReg=CoInstallers_AddReg
+
+[SiSCoInfo]
+OriginalInfSourcePath = %01%
+
+[CoInstallers_AddReg]
+HKR,,CoInstallers32,0x00010000,"SiSPIns2.dll,SiSVgaCoInstaller"
+
+[Strings]
+;
+; Non-Localizable Strings
+;
+REG_SZ         = 0x00000000
+REG_MULTI_SZ   = 0x00010000
+REG_BINARY     = 0x00000001
+REG_DWORD      = 0x00010001
+
+;
+; Localizable Strings
+;
+DiskId="Silicon Integrated Systems Installation DISK (VIDEO)"
+Provider="SiS"
+Mfg="SiS"
+SiS.Product.DeviceDesc1       ="SiS Mirage Graphics"
+SiS.Product.DeviceDesc2       ="SiS Mirage Graphics"
+SiS.Product.DeviceDesc3       ="SiS Mirage 3 Graphics"
+SiS.Product.DeviceDesc4       ="SiS Mirage 3 Graphics"
+SiS.Product.DeviceDesc5       ="SiS Mirage 3 Graphics"
+Vender.Acer.DeviceDesc1       ="SiS 760"
+Vender.Acer.DeviceDesc2       ="SiS 661FX"
+Vender.Acer.DeviceDesc3       ="SiS M661MX"
+Vender.Acer.DeviceDesc4       ="SiS M760GX"
+Vender.AOpen.DeviceDesc1      ="SiS 661FX"
+Vender.AOpen.DeviceDesc2      ="SiS 661FX"
+Vender.AOpen.DeviceDesc3      ="SiS 661FX"
+Vender.AOpen.DeviceDesc4      ="SiS 661FX"
+Vender.AOpen.DeviceDesc5      ="SiS 661FX"
+Vender.AOpen.DeviceDesc6      ="SiS 661FX"
+Vender.AOpen.DeviceDesc7      ="SiS 661FX"
+Vender.AOpen.DeviceDesc8      ="SiS 760"
+Vender.AOpen.DeviceDesc9      ="SiS 760"
+Vender.AOpen.DeviceDesc10     ="SiS 661FX"
+Vender.AOpen.DeviceDesc11     ="SiS 651C"
+Vender.AOpen.DeviceDesc12     ="SiS Mirage Graphics"
+Vender.ASRock.DeviceDesc1     ="SiS 661FX"
+Vender.ASRock.DeviceDesc2     ="SiS 661FX"
+Vender.ASRock.DeviceDesc3     ="SiS 741"
+Vender.ASRock.DeviceDesc4     ="SiS 651"
+Vender.ASRock.DeviceDesc5     ="SiS 760"
+Vender.ASRock.DeviceDesc6     ="SiS Mirage Graphics"
+Vender.ASUS.DeviceDesc1       ="SiS M661FX/M661MX"
+Vender.ASUS.DeviceDesc2       ="SiS 661FX"
+Vender.ASUS.DeviceDesc3       ="SiS 651"
+Vender.ASUS.DeviceDesc4       ="SiS 651_661FX_741_760_760GX_M661FX_M661MX_M741_M760_M760GX"
+Vender.ASUS.DeviceDesc5       ="SiS M760GX"
+Vender.ASUS.DeviceDesc6       ="SiS 661 series"
+Vender.ASUS.DeviceDesc7       ="SiS M661FX/M661MX"
+Vender.ASUS.DeviceDesc8       ="SiS Mirage Graphics"
+Vender.ASUS.DeviceDesc9       ="SiS Mirage Graphics"
+Vender.ASUS.DeviceDesc10      ="SiS Mirage Graphics"
+Vender.ASUS.DeviceDesc11      ="SiS Mirage Graphics"
+Vender.Bioster.DeviceDesc1    ="SiS 661FX"
+Vender.Clevo.DeviceDesc1      ="SiS M661FX"
+Vender.Clevo.DeviceDesc2      ="SiS M661MX"
+Vender.Compal.DeviceDesc1     ="SiS M661FX"
+Vender.DFI.DeviceDesc1        ="SiS Mirage Graphics"
+Vender.ECS.DeviceDesc1        ="SiS M661MX"
+Vender.ECS.DeviceDesc2        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc3        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc4        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc5        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc6        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc7        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc8        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc9        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc10       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc11       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc12       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc13       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc14       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc15       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc16       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc17       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc18       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc19       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc20       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc21       ="S4-5/S4-6"
+Vender.ECS.DeviceDesc22       ="SiS Mirage Graphics"
+Vender.ECS.DeviceDesc23       ="SiS Mirage Graphics"
+Vender.ECS.DeviceDesc24       ="SiS Mirage Graphics"
+Vender.Epox.DeviceDesc1       ="SiS 661FX"
+Vender.Epox.DeviceDesc2       ="SiS 661FX"
+Vender.Epox.DeviceDesc3       ="SiS Mirage Graphics"
+Vender.Epox.DeviceDesc4       ="SiS Mirage Graphics"
+Vender.F.DeviceDesc1          ="SiS 741"
+Vender.F.DeviceDesc2          ="SiS 651C"
+Vender.F.DeviceDesc3          ="SiS Mirage 3 Graphics"
+Vender.F.DeviceDesc4          ="SiS Mirage 3 Graphics"
+Vender.FIC.DeviceDesc1        ="SiS M661FX"
+Vender.FIC.DeviceDesc2        ="SiS M741"
+Vender.FIC.DeviceDesc3        ="SiS M661FX"
+Vender.Foxconn.DeviceDesc1    ="SiS 661FX"
+Vender.Foxconn.DeviceDesc2    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc3    ="SiS 661FX/GX Mirage Graphics"
+Vender.Foxconn.DeviceDesc4    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc5    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc6    ="SiS 650/651 Series"
+Vender.Foxconn.DeviceDesc7    ="SiS 661FX"
+Vender.Foxconn.DeviceDesc8    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc9    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc10   ="SiS 760"
+Vender.Foxconn.DeviceDesc11   ="SiS 661FX"
+Vender.Foxconn.DeviceDesc12   ="SiS 661FX/GX Mirage Graphics"
+Vender.Foxconn.DeviceDesc13   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc14   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc15   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc16   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc17   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc18   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc19   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc20   ="SiS 661FX/GX Mirage Graphics"
+Vender.Foxconn.DeviceDesc21   ="SiS 661FX/GX Mirage Graphics"
+Vender.Foxconn.DeviceDesc22   ="SiS 650/651/740/661FX/741/760/761GX series"
+Vender.Foxconn.DeviceDesc23   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc24   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc25   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc26   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc27   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc28   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc29   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc30   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc31   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc32   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc33   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc34   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc35   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc36   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc37   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc38   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc39   ="SiS Mirage Graphics"
+Vender.FSC.DeviceDesc1        ="SiS M760"
+Vender.FSC.DeviceDesc2        ="Fujitsu Siemens Computers SiS661FX on board Graphics"
+Vender.FSC.DeviceDesc3        ="Fujitsu Siemens Computers SiS761GX on board Graphics"
+Vender.Gigabyte.DeviceDesc1   ="SiS 661FX"
+Vender.Gigabyte.DeviceDesc2   ="SiS 661FXMIU"
+Vender.Gigabyte.DeviceDesc3   ="SiS Mirage 3 Graphics"
+Vender.HP.DeviceDesc1         ="SiS 760"
+Vender.HP.DeviceDesc2         ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc1     ="SiS M661MX"
+Vender.Lenovo.DeviceDesc2     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc3     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc4     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc5     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc6     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc7     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc8     ="SiS Mirage 3 Graphics"
+Vender.LiteON.DeviceDesc1     ="SiS 661FX"
+Vender.LiteON.DeviceDesc2     ="SiS Mirage Graphics"
+Vender.MSI.DeviceDesc1        ="SiS M741"
+Vender.MSI.DeviceDesc2        ="SiS M661MX"
+Vender.MSI.DeviceDesc3        ="SiS 661FX"
+Vender.MSI.DeviceDesc4        ="SiS 661FX"
+Vender.MSI.DeviceDesc5        ="SiS 661FX"
+Vender.MSI.DeviceDesc6        ="SiS 661FX"
+Vender.MSI.DeviceDesc7        ="SiS M760"
+Vender.MSI.DeviceDesc8        ="SiS M741"
+Vender.MSI.DeviceDesc9        ="SiS 661FX"
+Vender.MSI.DeviceDesc10       ="SiS 760GX"
+Vender.MSI.DeviceDesc11       ="SiS Mirage Graphics"
+Vender.MSI.DeviceDesc12       ="SiS Mirage Graphics"
+Vender.MTC.DeviceDesc1        ="SiS M661FX"
+Vender.MTC.DeviceDesc2        ="SiS M661FX"
+Vender.NEC.DeviceDesc1        ="SiS 760"
+Vender.NEC.DeviceDesc2        ="SiS M760GX"
+Vender.NEC.DeviceDesc3        ="SiS Mirage Graphics"
+Vender.NEC.DeviceDesc4        ="SiS Mirage Graphics"
+Vender.NECCI.DeviceDesc1      ="SiS 651C"
+Vender.NECCI.DeviceDesc2      ="SiS M760GX"
+Vender.NECCI.DeviceDesc3      ="SiS Mirage Graphics"
+Vender.Quanta.DeviceDesc1     ="SiS Mirage Graphics"
+Vender.Quanta.DeviceDesc2     ="SiS Mirage Graphics"
+Vender.Quanta.DeviceDesc3     ="SiS Mirage 3 Graphics"
+Vender.Shuttle.DeviceDesc1    ="SiS Mirage Graphics"
+Vender.Sony.DeviceDesc1       ="SiS 661FX"
+Vender.TCL.DeviceDesc1        ="SiS Mirage Graphics"
+Vender.USI.DeviceDesc1        ="SiS Mirage Graphics"
+Vender.USI.DeviceDesc2        ="SiS Mirage Graphics"
+Vender.UniWill.DeviceDesc1    ="SiS M760"
+Vender.UniWill.DeviceDesc2    ="SiS M760/M760GX"
+Vender.UniWill.DeviceDesc3    ="SiS M760/760GX"
+Vender.Wistron.DeviceDesc1    ="SiS M661FX"
+Vender.Wistron.DeviceDesc2    ="SiS Mirage Graphics"
+Vender.Dell.DeviceDesc1       ="SiS Mirage 3 Graphics"
+Vender.Dell.DeviceDesc2       ="SiS Mirage 3 Graphics"
+Vender.Pegatron.DeviceDesc1   ="SiS Mirage 3 Graphics"

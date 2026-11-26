@@ -1,0 +1,73 @@
+;Copyright 1998-2006, Silicon Integrated Systems Corporation
+
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider=%Provider%
+LayoutFile=layout.inf
+DriverVer=12/09/2004,5.1.2600.2180
+CatalogFile=sisuagp.cat
+
+
+; =================== Common for all AGP devices =========================
+[DestinationDirs]
+DefaultDestDir = 12        ; DIRID_DRIVERS
+
+[ControlFlags]
+ExcludeFromSelect = PCI\VEN_1039&DEV_0002
+ExcludeFromSelect = PCI\VEN_1039&DEV_0003
+
+[Manufacturer]
+%SIS_MFG%=SIS_UAGP, NTamd64
+
+
+; =================== SISAGP ========================
+[SIS_UAGP]
+%SIS.AGP.DeviceDesc%=SISGAGP_Install,PCI\VEN_1039&DEV_0002
+%SIS.AGP.DeviceDesc%=SISUAGP_Install,PCI\VEN_1039&DEV_0003
+
+; for Windows x64 Edition
+[SIS_UAGP.NTamd64]
+%SIS.AGP.DeviceDesc%=SISGAGP_Install,PCI\VEN_1039&DEV_0002
+%SIS.AGP.DeviceDesc%=SISUAGP_Install,PCI\VEN_1039&DEV_0003
+
+;
+; Microsoft UAGP35
+;
+[SISUAGP_Install]
+Include = machine.inf
+Needs = UAGP35_Install
+
+[SISUAGP_Install.HW]
+Include = machine.inf
+Needs = UAGP35_Install.HW
+
+[SISUAGP_Install.Services]
+Include = machine.inf
+Needs = UAGP35_Install.Services
+
+;
+; Generic AGPv3.0 driver for AMD K8/9 platforms
+;
+[SISGAGP_Install]
+Include = machine.inf
+Needs = GAGP30KX_Install
+
+[SISGAGP_Install.HW]
+Include = machine.inf
+Needs = GAGP30KX_Install.HW
+
+[SISGAGP_Install.Services]
+Include = machine.inf
+Needs = GAGP30KX_Install.Services
+
+
+; =================== STRINGS and CONSTANTS ========================
+
+[Strings]
+SIS_MFG      = "Silicon Integrated Systems"
+Provider     = "SiS"
+SIS.AGP.DeviceDesc = "SiS Accelerated Graphics Port"
+

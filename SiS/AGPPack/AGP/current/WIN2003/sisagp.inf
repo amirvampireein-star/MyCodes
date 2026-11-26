@@ -1,0 +1,94 @@
+;Copyright 1998-2006, Silicon Integrated Systems Corporation
+
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider=%Provider%
+DriverVer=06/16/2006,7.2.0.1220
+CatalogFile=sisagp.cat
+
+
+; =================== Common for all AGP devices =========================
+[DestinationDirs]
+DefaultDestDir = 12        ; DIRID_DRIVERS
+
+[ControlFlags]
+ExcludeFromSelect = PCI\VEN_1039&DEV_0001
+ExcludeFromSelect = PCI\VEN_1039&DEV_0002
+ExcludeFromSelect = PCI\VEN_1039&DEV_0003
+
+[Manufacturer]
+%SIS_MFG%=SIS_AGP
+
+[AGP_Filter_Reg]
+HKR,,"UpperFilters", 0x00010000,"SISAGP"
+
+[pci_ServiceInstallSection]
+DisplayName    = %pci_svcdesc%
+ServiceType    = %SERVICE_KERNEL_DRIVER%
+StartType      = %SERVICE_BOOT_START%
+ErrorControl   = %SERVICE_ERROR_NORMAL%
+ServiceBinary  = %12%\pci.sys
+LoadOrderGroup = "Boot Bus Extender"
+
+; =================== SISAGP ========================
+[SIS_AGP]
+%SIS.AGP.DeviceDesc%=SISAGP_Install,PCI\VEN_1039&DEV_0001
+%SIS.AGP.DeviceDesc2%=SISAGP_Install,PCI\VEN_1039&DEV_0002
+%SIS.AGP.DeviceDesc3%=SISAGP_Install,PCI\VEN_1039&DEV_0003
+
+[SISAGP_Install]
+CopyFiles=SISAGPX.SYS
+
+[SISAGPX.SYS]
+SISAGPX.SYS
+
+[SISAGP_Install.HW]
+AddReg = AGP_Filter_Reg
+
+[SISAGP_Install.Services]
+AddService = SISAGP,0,SISAGP_ServiceInstallSection
+AddService = pci, %SPSVCINST_ASSOCSERVICE%, pci_ServiceInstallSection
+
+[SISAGP_ServiceInstallSection]
+DisplayName    = %SISAGP_svcdesc%
+ServiceType    = %SERVICE_KERNEL_DRIVER%
+StartType      = %SERVICE_DEMAND_START%
+ErrorControl   = %SERVICE_ERROR_NORMAL%
+ServiceBinary  = %12%\SISAGPX.sys
+LoadOrderGroup = PnP Filter
+
+;
+; Source file information
+;
+
+[SourceDisksNames.x86]
+1 = %DiskId%,,,""
+
+[SourceDisksFiles]
+SISAGPX.sys  = 1
+
+; =================== STRINGS and CONSTANTS ========================
+
+[Strings]
+SIS_MFG      = "Silicon Integrated Systems"
+DiskId       = "Silicon Integrated Systems Installation DISK (AGP)"
+Provider     = "SiS"
+SIS.AGP.DeviceDesc = "SiS Accelerated Graphics Port"
+SIS.AGP.DeviceDesc2 = "SiS Accelerated Graphics Port"
+SIS.AGP.DeviceDesc3 = "SiS Accelerated Graphics Port"
+
+;service descriptions
+SISAGP_svcdesc = "SiS AGP Filter"
+pci_svcdesc = "PCI Bus Driver"
+
+
+;*******************************************
+;Handy macro substitutions (non-localizable)
+SPSVCINST_ASSOCSERVICE = 0x00000002
+SERVICE_KERNEL_DRIVER  = 1
+SERVICE_BOOT_START     = 0
+SERVICE_DEMAND_START   = 3
+SERVICE_ERROR_NORMAL   = 1

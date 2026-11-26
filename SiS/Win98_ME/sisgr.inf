@@ -1,0 +1,866 @@
+; SiS Windows 9X/ME Display INF file
+; Copyright (C) Silicon Integrated Systems Corp. 2005
+; All Rights Reserved
+
+[Version]
+ClassGUID={4D36E968-E325-11CE-BFC1-08002BE10318}
+Class=Display
+signature="$CHICAGO$"
+Provider=%Provider%
+DriverVer=10/26/2010,4.14.10.3930
+CatalogFile=sisgr.cat
+
+[DestinationDirs]
+DefaultDestDir=11
+Driver.Copy   =11
+OpenGL.Copy   =11
+Uninst.Copy   =11
+Uninst.Del    =11
+
+[SourceDisksNames]
+1="SiS Compatible VGA Driver Disk for Windows",,
+
+[SourceDisksFiles]
+sisgr.drv=1
+sisgr.vxd=1
+sisdx.dll=1
+sisdx32.dll=1
+sisgl.dll=1
+SiSPInst.dll=1
+SiSBase.dll=1
+SiSParse.dll=1
+SiSInst.dll=1
+
+[Manufacturer]
+%Mfg%=Mfg
+
+[Mfg]
+%SiS.Product.DeviceDesc1%     = Driver4.Install, PCI\VEN_1039&DEV_6330
+%SiS.Product.DeviceDesc2%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_63301039
+%SiS.Product.DeviceDesc3%     = Driver4.Install, PCI\VEN_1039&DEV_6350
+%SiS.Product.DeviceDesc4%     = Driver4.Install, PCI\VEN_1039&DEV_6350&SUBSYS_63501039
+%SiS.Product.DeviceDesc5%     = Driver4.Install, PCI\VEN_1039&DEV_6351
+%Vender.Acer.DeviceDesc1%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_00481025
+%Vender.Acer.DeviceDesc2%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_00491025
+%Vender.Acer.DeviceDesc3%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_00821025
+%Vender.Acer.DeviceDesc4%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_00831025
+%Vender.AOpen.DeviceDesc1%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0351A0A0
+%Vender.AOpen.DeviceDesc2%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0352A0A0
+%Vender.AOpen.DeviceDesc3%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0353A0A0
+%Vender.AOpen.DeviceDesc4%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0355A0A0
+%Vender.AOpen.DeviceDesc5%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0408A0A0
+%Vender.AOpen.DeviceDesc6%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0409A0A0
+%Vender.AOpen.DeviceDesc7%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0466A0A0
+%Vender.AOpen.DeviceDesc8%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_04EDA0A0
+%Vender.AOpen.DeviceDesc9%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_04EEA0A0
+%Vender.AOpen.DeviceDesc10%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0500A0A0
+%Vender.AOpen.DeviceDesc11%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_033FA0A0
+%Vender.AOpen.DeviceDesc12%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0580A0A0
+%Vender.ASRock.DeviceDesc1%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_06611849
+%Vender.ASRock.DeviceDesc2%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_63301849
+%Vender.ASRock.DeviceDesc3%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_63311849
+%Vender.ASRock.DeviceDesc4%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_63291849
+%Vender.ASRock.DeviceDesc5%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_76011849
+%Vender.ASRock.DeviceDesc6%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_07611849
+%Vender.ASUS.DeviceDesc1%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_19211043
+%Vender.ASUS.DeviceDesc2%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_81131043
+%Vender.ASUS.DeviceDesc3%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_814F1043
+%Vender.ASUS.DeviceDesc4%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_81591043
+%Vender.ASUS.DeviceDesc5%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_11021043
+%Vender.ASUS.DeviceDesc6%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_818E1043
+%Vender.ASUS.DeviceDesc7%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_C0131631
+%Vender.ASUS.DeviceDesc8%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_82291043
+%Vender.ASUS.DeviceDesc9%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_822A1043
+%Vender.ASUS.DeviceDesc10%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_82051043
+%Vender.ASUS.DeviceDesc11%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_14521043
+%Vender.Bioster.DeviceDesc1%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_13061565
+%Vender.Clevo.DeviceDesc1%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_04801558
+%Vender.Clevo.DeviceDesc2%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_03601558
+%Vender.Compal.DeviceDesc1%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_001214C0
+%Vender.DFI.DeviceDesc1%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_100215BD
+%Vender.ECS.DeviceDesc1%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0F521019
+%Vender.ECS.DeviceDesc2%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0A421019
+%Vender.ECS.DeviceDesc3%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0A441019
+%Vender.ECS.DeviceDesc4%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_18031019
+%Vender.ECS.DeviceDesc5%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_18061019
+%Vender.ECS.DeviceDesc6%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_18141019
+%Vender.ECS.DeviceDesc7%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_18151019
+%Vender.ECS.DeviceDesc8%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_18911019
+%Vender.ECS.DeviceDesc9%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B021019
+%Vender.ECS.DeviceDesc10%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B101019
+%Vender.ECS.DeviceDesc11%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B131019
+%Vender.ECS.DeviceDesc12%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B141019
+%Vender.ECS.DeviceDesc13%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B151019
+%Vender.ECS.DeviceDesc14%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B161019
+%Vender.ECS.DeviceDesc15%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B261019
+%Vender.ECS.DeviceDesc16%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B271019
+%Vender.ECS.DeviceDesc17%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B281019
+%Vender.ECS.DeviceDesc18%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B291019
+%Vender.ECS.DeviceDesc19%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1B371019
+%Vender.ECS.DeviceDesc20%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0F611019
+%Vender.ECS.DeviceDesc21%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_1E681019
+%Vender.ECS.DeviceDesc22%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0F611019
+%Vender.ECS.DeviceDesc23%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0F621019
+%Vender.ECS.DeviceDesc24%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_208117C0
+%Vender.Epox.DeviceDesc1%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_20071695
+%Vender.Epox.DeviceDesc2%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_20081695
+%Vender.Epox.DeviceDesc3%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_200D1695
+%Vender.Epox.DeviceDesc4%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_200E1695
+%Vender.F.DeviceDesc1%        = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_125810CF
+%Vender.F.DeviceDesc2%        = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_12C410CF
+%Vender.F.DeviceDesc3%        = Driver4.Install, PCI\VEN_1039&DEV_6351&SUBSYS_141D10CF
+%Vender.F.DeviceDesc4%        = Driver4.Install, PCI\VEN_1039&DEV_6351&SUBSYS_141E10CF
+%Vender.FIC.DeviceDesc1%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_34301509
+%Vender.FIC.DeviceDesc2%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_81301509
+%Vender.FIC.DeviceDesc3%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_10751734
+%Vender.Foxconn.DeviceDesc1%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C08105B
+%Vender.Foxconn.DeviceDesc2%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C4B105B
+%Vender.Foxconn.DeviceDesc3%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C4C105B
+%Vender.Foxconn.DeviceDesc4%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C4D105B
+%Vender.Foxconn.DeviceDesc5%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C4E105B
+%Vender.Foxconn.DeviceDesc6%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C50105B
+%Vender.Foxconn.DeviceDesc7%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C51105B
+%Vender.Foxconn.DeviceDesc8%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C52105B
+%Vender.Foxconn.DeviceDesc9%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C53105B
+%Vender.Foxconn.DeviceDesc10% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C54105B
+%Vender.Foxconn.DeviceDesc11% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C55105B
+%Vender.Foxconn.DeviceDesc12% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C56105B
+%Vender.Foxconn.DeviceDesc13% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C57105B
+%Vender.Foxconn.DeviceDesc14% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C58105B
+%Vender.Foxconn.DeviceDesc15% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C59105B
+%Vender.Foxconn.DeviceDesc16% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C5D105B
+%Vender.Foxconn.DeviceDesc17% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C5E105B
+%Vender.Foxconn.DeviceDesc18% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C60105B
+%Vender.Foxconn.DeviceDesc19% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C61105B
+%Vender.Foxconn.DeviceDesc20% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C62105B
+%Vender.Foxconn.DeviceDesc21% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C65105B
+%Vender.Foxconn.DeviceDesc22% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C91105B
+%Vender.Foxconn.DeviceDesc23% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C92105B
+%Vender.Foxconn.DeviceDesc24% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C93105B
+%Vender.Foxconn.DeviceDesc25% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C66105B
+%Vender.Foxconn.DeviceDesc26% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C67105B
+%Vender.Foxconn.DeviceDesc27% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C68105B
+%Vender.Foxconn.DeviceDesc28% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C69105B
+%Vender.Foxconn.DeviceDesc29% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C6A105B
+%Vender.Foxconn.DeviceDesc30% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C6B105B
+%Vender.Foxconn.DeviceDesc31% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C6C105B
+%Vender.Foxconn.DeviceDesc32% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C6D105B
+%Vender.Foxconn.DeviceDesc33% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C6E105B
+%Vender.Foxconn.DeviceDesc34% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C6F105B
+%Vender.Foxconn.DeviceDesc35% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C96105B
+%Vender.Foxconn.DeviceDesc36% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C97105B
+%Vender.Foxconn.DeviceDesc37% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C98105B
+%Vender.Foxconn.DeviceDesc38% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C99105B
+%Vender.Foxconn.DeviceDesc39% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0C9A105B
+%Vender.FSC.DeviceDesc1%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_106C1734
+%Vender.FSC.DeviceDesc2%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_10461734
+%Vender.FSC.DeviceDesc3%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_10991734
+%Vender.Gigabyte.DeviceDesc1% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_D0001458
+%Vender.Gigabyte.DeviceDesc2% = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_03001014
+%Vender.Gigabyte.DeviceDesc3% = Driver4.Install, PCI\VEN_1039&DEV_6351&SUBSYS_E2011631
+%Vender.HP.DeviceDesc1%       = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_2A06103C
+%Vender.HP.DeviceDesc2%       = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_3020103C
+%Vender.Lenovo.DeviceDesc1%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_507017AA
+%Vender.Lenovo.DeviceDesc2%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_100017AA
+%Vender.Lenovo.DeviceDesc3%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_100A17AA
+%Vender.Lenovo.DeviceDesc4%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_101617AA
+%Vender.Lenovo.DeviceDesc5%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_101717AA
+%Vender.Lenovo.DeviceDesc6%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_101817AA
+%Vender.Lenovo.DeviceDesc7%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_101917AA
+%Vender.Lenovo.DeviceDesc8%   = Driver4.Install, PCI\VEN_1039&DEV_6351&SUBSYS_306917AA
+%Vender.LiteON.DeviceDesc1%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_218914A4
+%Vender.LiteON.DeviceDesc2%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_102714A4
+%Vender.MSI.DeviceDesc1%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_00411462
+%Vender.MSI.DeviceDesc2%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_00611462
+%Vender.MSI.DeviceDesc3%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_54081462
+%Vender.MSI.DeviceDesc4%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_79101462
+%Vender.MSI.DeviceDesc5%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_70601462
+%Vender.MSI.DeviceDesc6%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_54081462
+%Vender.MSI.DeviceDesc7%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_01111462
+%Vender.MSI.DeviceDesc8%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_00911462
+%Vender.MSI.DeviceDesc9%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_70821462
+%Vender.MSI.DeviceDesc10%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_71121462
+%Vender.MSI.DeviceDesc11%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_72081462
+%Vender.MSI.DeviceDesc12%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_72811462
+%Vender.MTC.DeviceDesc1%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_85991071
+%Vender.MTC.DeviceDesc2%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_C0041631
+%Vender.NEC.DeviceDesc1%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_825F1033
+%Vender.NEC.DeviceDesc2%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_82851033
+%Vender.NEC.DeviceDesc3%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_830E1033
+%Vender.NEC.DeviceDesc4%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_831E1033
+%Vender.NECCI.DeviceDesc1%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_10041631
+%Vender.NECCI.DeviceDesc2%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_C00D1631
+%Vender.NECCI.DeviceDesc3%    = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_E0301631
+%Vender.Quanta.DeviceDesc1%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0756152D
+%Vender.Quanta.DeviceDesc2%   = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_0759152D
+%Vender.Quanta.DeviceDesc3%   = Driver4.Install, PCI\VEN_1039&DEV_6351&SUBSYS_C2021631
+%Vender.Shuttle.DeviceDesc1%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_50471297
+%Vender.Sony.DeviceDesc1%     = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_81B4104D
+%Vender.TCL.DeviceDesc1%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_300119DB
+%Vender.USI.DeviceDesc1%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_101617AA
+%Vender.USI.DeviceDesc2%      = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_180C147B
+%Vender.UniWill.DeviceDesc1%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_50401584
+%Vender.UniWill.DeviceDesc2%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_50411584
+%Vender.UniWill.DeviceDesc3%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_50431584
+%Vender.Wistron.DeviceDesc1%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_206C17C0
+%Vender.Wistron.DeviceDesc2%  = Driver4.Install, PCI\VEN_1039&DEV_6330&SUBSYS_208117C0
+%Vender.Dell.DeviceDesc1%     = Driver4.Install, PCI\VEN_1039&DEV_6351&SUBSYS_02811028
+%Vender.Dell.DeviceDesc2%     = Driver4.Install, PCI\VEN_1039&DEV_6351&SUBSYS_02C31028
+%Vender.Pegatron.DeviceDesc1% = Driver4.Install, PCI\VEN_1039&DEV_6351&SUBSYS_20141B0A
+
+;----------------------------------------
+; for .inf setup
+[Driver4.Install]
+CopyFiles=Driver.Copy, OpenGL.Copy, Uninst.Copy
+DelReg=Prev.DelReg1, OpenGL.DelReg
+AddReg=DEV_6330.AddReg, Common.AddReg, OpenGL.AddReg, Inst.AddReg
+UpdateInis=MMPower.UpdateInis
+
+[SystemIni.Update]
+%10%\System.ini,boot,,"display.drv=sisgr.drv",0
+
+[SystemIni.Restore]
+%10%\System.ini,boot,,"display.drv=pnpdrvr.drv",0
+
+[MMPower.UpdateInis]
+%10%\System.ini,386Enh,,"EMMExclude=C000-CFFF",0
+
+; for driver uninstall
+; don't rename this section
+[Driver.Uninst]
+UpdateInis=SystemIni.Restore
+DelReg=Prev.DelReg1, OpenGL.DelReg, Util.DelReg
+AddReg=Driver.Standard
+DelFiles=Uninst.Del
+;----------------------------------------
+
+[Driver.Copy]
+sisgr.drv
+sisgr.vxd
+sisdx.dll
+sisdx32.dll
+
+[OpenGL.Copy]
+sisgl.dll
+
+[Uninst.Copy]
+SiSPInst.dll
+SiSBase.dll
+SiSParse.dll
+SiSInst.dll
+
+[Uninst.Del]
+sisgr.drv,,,1
+sisgr.vxd,,,1
+sisdx.dll,,,1
+sisdx32.dll,,,1
+sisgl.dll,,,1
+SiSBase.dll,,,1
+SiSParse.dll,,,1
+SiSInst.dll,,,1
+SiSPInst.dll,,,1
+
+[OpenGL.AddReg]
+HKLM,"Software\Microsoft\Windows\CurrentVersion\OpenGLDrivers","sisgl",,"sisgl.dll"
+
+[OpenGL.DelReg]
+HKLM,"Software\Microsoft\Windows\CurrentVersion\OpenGLDrivers"
+
+[Prev.DelReg1]
+HKR,,Ver
+HKR,,DrvVer
+HKR,,ProviderName
+HKR,,DevLoader
+HKR,,DriverVersion
+HKR,DEFAULT
+HKR,MODES
+HKR,INFO
+HKR,2D
+HKR,3D
+HKR,"Customer Modes"
+HKR,UNIT1
+
+; for standard VGA recovery
+[Driver.Standard]
+HKR,,Ver,,4.0
+HKR,,DriverDesc,,"Standard PCI Graphics Adapter [VGA]"
+HKR,,ProviderName,,"Microsoft"
+HKR,,DevLoader,,*vdd
+HKR,,DriverDate,,"12-8-1997"
+HKR,,InfPath,,"MSDISP.INF"
+HKR,,InfSection,,"VGA"
+HKR,,MatchingDeviceId,,"PCI\CC_0310"
+
+HKR,DEFAULT,Mode,,"4,640,480"
+HKR,DEFAULT,drv,,vga.drv
+HKR,DEFAULT,vdd,,"*vdd"
+
+HKR,"MODES\1\640,480",drv,,framebuf.drv
+HKR,"MODES\1\640,480",vdd,,"*vdd,*vflatd"
+HKR,"MODES\4\640,480",drv,,vga.drv
+
+[Common.AddReg]
+HKR,,Ver,,4.0
+HKR,,DrvVer,,"3.93.01"
+HKR,,ProviderName,,"Silicon Integrated Systems Corporation"
+HKR,,DevLoader,,*vdd
+HKR,DEFAULT,Mode,,%DefaultMode%
+HKR,DEFAULT,drv,,sisgr.drv
+HKR,DEFAULT,drv2,,sisgr.drv
+HKR,DEFAULT,vdd,,"*vdd"
+HKR,DEFAULT,minivdd,,sisgr.vxd
+HKR,DEFAULT,minivdd2,,sisgr.vxd
+HKR,DEFAULT,RefreshRate,,-1
+HKR,DEFAULT,DDC,,1
+HKR,INFO
+
+HKR,"MODES\4\640,480",drv,,vga.drv
+HKR,"MODES\4\640,480",vdd,,*vdd
+
+HKR,"MODES\8\640,480"
+HKR,"MODES\8\800,600"
+HKR,"MODES\8\1024,768"
+HKR,"MODES\8\1152,864"
+HKR,"MODES\8\1280,1024"
+HKR,"MODES\8\1600,1200"
+HKR,"MODES\8\1920,1440"
+HKR,"MODES\8\2048,1536"
+HKR,"MODES\8\800,480"
+HKR,"MODES\8\1024,576"
+HKR,"MODES\8\1280,720"
+HKR,"MODES\8\1280,768"
+HKR,"MODES\8\1400,1050"
+HKR,"MODES\8\720,480"
+HKR,"MODES\8\1280,800"
+HKR,"MODES\8\1680,1050"
+HKR,"MODES\8\960,600"
+
+HKR,"MODES\16\640,480"
+HKR,"MODES\16\800,600"
+HKR,"MODES\16\1024,768"
+HKR,"MODES\16\1152,864"
+HKR,"MODES\16\1280,1024"
+HKR,"MODES\16\1600,1200"
+HKR,"MODES\16\1920,1440"
+HKR,"MODES\16\2048,1536"
+HKR,"MODES\16\800,480"
+HKR,"MODES\16\1024,576"
+HKR,"MODES\16\1280,720"
+HKR,"MODES\16\1280,768"
+HKR,"MODES\16\1400,1050"
+HKR,"MODES\16\720,480"
+HKR,"MODES\16\1280,800"
+HKR,"MODES\16\1680,1050"
+HKR,"MODES\16\960,600"
+
+HKR,"MODES\32\640,480"
+HKR,"MODES\32\800,600"
+HKR,"MODES\32\1024,768"
+HKR,"MODES\32\1152,864"
+HKR,"MODES\32\1280,1024"
+HKR,"MODES\32\1600,1200"
+HKR,"MODES\32\1920,1440"
+HKR,"MODES\32\2048,1536"
+HKR,"MODES\32\800,480"
+HKR,"MODES\32\1024,576"
+HKR,"MODES\32\1280,720"
+HKR,"MODES\32\1280,768"
+HKR,"MODES\32\1400,1050"
+HKR,"MODES\32\720,480"
+HKR,"MODES\32\1280,800"
+HKR,"MODES\32\1680,1050"
+HKR,"MODES\32\960,600"
+
+HKR,2D,DisableFlag,0x00010001,0x00000000
+;HKR,2D,Driving,,1
+;HKR,2D,DRV_MODE,,2
+; HKR,2D,TV_SPEC,,0
+;HKR,2D,CRT2Type,0x00010001,0x00001008
+;HKR,2D,OEMSetup,,"0"
+;HKR,2D,HWTrap,0x00010001,0x00000000
+;HKR,2D,NonDDCProtect,,1
+;HKR,2D,Alloc3DBufferEx,0x00010001,0x00400000
+;HKR,2D,1024x768x32Bpp_NTSCTVMode,,"1"
+;HKR,2D,DisableDAC_HVSync,,"0"   
+HKR,2D,UnifyUI,0x00010001,0x00000001
+
+; for DLL Name
+HKR,2D,VBDLLName,,"sisvb.dll"
+; HKR,2D,301DLLName,,"SiS301.dll"
+; HKR,2D,302DLLName,,"SiS302.dll"
+HKR,2D,DD16DLLName,,"sisdx.dll"
+HKR,2D,DD32DLLName,,"sisdx32.dll"
+
+;HKR,2D,BI1_000,,"60,72,75,85,100,120,160,200"
+;HKR,2D,BI1_001,,"60,72,75,85,100,120,160,200"
+;HKR,2D,BI1_003,,"60,72,75,85,100,120,160,200"
+;HKR,2D,BI1_010,,"56,60,72,75,85,100,120,160"
+;HKR,2D,BI1_011,,"56,60,72,75,85,100,120,160"
+;HKR,2D,BI1_013,,"56,60,72,75,85,100,120,160"
+;HKR,2D,BI1_020,,",60,70,75,85,100,120"
+;HKR,2D,BI1_021,,",60,70,75,85,100,120"
+;HKR,2D,BI1_023,,",60,70,75,85,100,120"
+;HKR,2D,BI1_030,,",60,75,85"
+;HKR,2D,BI1_031,,",60,75,85"
+;HKR,2D,BI1_033,,",60,75,85"
+;HKR,2D,BI1_040,,"60,65,70,75,85"
+;HKR,2D,BI1_041,,"60,65,70,75,85"
+;HKR,2D,BI1_043,,"60,65,70,75,85"
+;HKR,2D,BI1_050,,"60,65,70,75,85"
+;HKR,2D,BI1_051,,"60,65,70,75,85"
+;HKR,2D,BI1_053,,"60,65,70,75,85"
+;HKR,2D,BI1_060,,"60,65,70,75"
+;HKR,2D,BI1_061,,"60,65,70,75"
+;HKR,2D,BI1_063,,"60,65,70,75"
+;HKR,2D,BI1_070,,"60"
+;HKR,2D,BI1_071,,"60"
+;HKR,2D,BI1_073,,"60"
+;HKR,2D,BI1_080,,"60"
+;HKR,2D,BI1_081,,"60"
+;HKR,2D,BI1_083,,"60"
+;HKR,2D,BI1_090,,"60"
+;HKR,2D,BI1_091,,"60"
+;HKR,2D,BI1_093,,"60"
+;HKR,2D,BI1_0A0,,"60"
+;HKR,2D,BI1_0A1,,"60"
+;HKR,2D,BI1_0A3,,"60"
+;;HKR,2D,BI1_0B0,,"60"
+;;HKR,2D,BI1_0B1,,"60"
+;;HKR,2D,BI1_0B3,,"60"
+;HKR,2D,BI1_0C0,,"60,75"
+;HKR,2D,BI1_0C1,,"60,75"
+;HKR,2D,BI1_0C3,,"60,75"
+;;HKR,2D,BI1_0D0,,"60"
+;;HKR,2D,BI1_0D1,,"60"
+;;HKR,2D,BI1_0D3,,"60"
+;HKR,2D,BI1_0E0,,"60"
+;HKR,2D,BI1_0E1,,"60"
+;HKR,2D,BI1_0E3,,"60"
+;;HKR,2D,BI1_0F0,,"60"
+;;HKR,2D,BI1_0F1,,"60"
+;;HKR,2D,BI1_0F3,,"60"
+;HKR,2D,BI2_000,,"60,72,75,85,100,120,160,200"
+;HKR,2D,BI2_001,,"60,72,75,85,100,120,160,200"
+;HKR,2D,BI2_003,,"60,72,75,85,100,120,160,200"
+;HKR,2D,BI2_010,,"56,60,72,75,85,100,120,160"
+;HKR,2D,BI2_011,,"56,60,72,75,85,100,120,160"
+;HKR,2D,BI2_013,,"56,60,72,75,85,100,120,160"
+;HKR,2D,BI2_020,,",60,70,75,85,100,120"
+;HKR,2D,BI2_021,,",60,70,75,85,100,120"
+;HKR,2D,BI2_023,,",60,70,75,85,100,120"
+;HKR,2D,BI2_030,,",60,75,85"
+;HKR,2D,BI2_031,,",60,75,85"
+;HKR,2D,BI2_033,,",60,75,85"
+;HKR,2D,BI2_040,,"60,65,70,75,85"
+;HKR,2D,BI2_041,,"60,65,70,75,85"
+;HKR,2D,BI2_043,,"60,65,70,75,85"
+;HKR,2D,BI2_050,,"60,65,70,75,85"
+;HKR,2D,BI2_051,,"60,65,70,75,85"
+;HKR,2D,BI2_053,,"60,65,70,75,85"
+;HKR,2D,BI2_060,,"60,65,70,75"
+;HKR,2D,BI2_061,,"60,65,70,75"
+;HKR,2D,BI2_063,,"60,65,70,75"
+;HKR,2D,BI2_070,,"60"
+;HKR,2D,BI2_071,,"60"
+;HKR,2D,BI2_073,,"60"
+;HKR,2D,BI2_080,,"60"
+;HKR,2D,BI2_081,,"60"
+;HKR,2D,BI2_083,,"60"
+;HKR,2D,BI2_090,,"60"
+;HKR,2D,BI2_091,,"60"
+;HKR,2D,BI2_093,,"60"
+;;HKR,2D,BI2_0C0,,"60,75"
+;;HKR,2D,BI2_0C1,,"60,75"
+;;HKR,2D,BI2_0C3,,"60,75"
+;;HKR,2D,BI2_0D0,,"60"
+;;HKR,2D,BI2_0D1,,"60"
+;;HKR,2D,BI2_0D3,,"60"
+;HKR,2D,BI3_000,,"60"
+;HKR,2D,BI3_001,,"60"
+;HKR,2D,BI3_003,,"60"
+;HKR,2D,BI3_010,,",60"
+;HKR,2D,BI3_011,,",60"
+;HKR,2D,BI3_013,,",60"
+;HKR,2D,BI3_020,,",60"
+;HKR,2D,BI3_021,,",60"
+;HKR,2D,BI3_023,,",60"
+;HKR,2D,BI3_030,,",60"
+;HKR,2D,BI3_031,,",60"
+;HKR,2D,BI3_033,,",60"
+;HKR,2D,BI3_040,,"60"
+;HKR,2D,BI3_041,,"60"
+;HKR,2D,BI3_043,,"60"
+;HKR,2D,BI3_050,,"60"
+;HKR,2D,BI3_051,,"60"
+;HKR,2D,BI3_053,,"60"
+;HKR,2D,BI3_060,,"60"
+;HKR,2D,BI3_061,,"60"
+;HKR,2D,BI3_063,,"60"
+;HKR,2D,BI4_000,,"50"
+;HKR,2D,BI4_001,,"50"
+;HKR,2D,BI4_003,,"50"
+;HKR,2D,BI4_010,,",50"
+;HKR,2D,BI4_011,,",50"
+;HKR,2D,BI4_013,,",50"
+;HKR,2D,BI4_020,,",50"
+;HKR,2D,BI4_021,,",50"
+;HKR,2D,BI4_023,,",50"
+;HKR,2D,BI4_030,,",50"
+;HKR,2D,BI4_031,,",50"
+;HKR,2D,BI4_033,,",50"
+;HKR,2D,BI4_040,,"50"
+;HKR,2D,BI4_041,,"50"
+;HKR,2D,BI4_043,,"50"
+;HKR,2D,BI4_050,,"50"
+;HKR,2D,BI4_051,,"50"
+;HKR,2D,BI4_053,,"50"
+;HKR,2D,BI4_060,,"50"
+;HKR,2D,BI4_061,,"50"
+;HKR,2D,BI4_063,,"50"
+;HKR,2D,BI5_000,,"60"
+;HKR,2D,BI5_001,,"60"
+;HKR,2D,BI5_003,,"60"
+;HKR,2D,BI5_010,,",60"
+;HKR,2D,BI5_011,,",60"
+;HKR,2D,BI5_013,,",60"
+;HKR,2D,BI5_020,,",60"
+;HKR,2D,BI5_021,,",60"
+;HKR,2D,BI5_023,,",60"
+;HKR,2D,BI5_030,,",60"
+;HKR,2D,BI5_031,,",60"
+;HKR,2D,BI5_033,,",60"
+;HKR,2D,BI5_040,,"60"
+;HKR,2D,BI5_041,,"60"
+;HKR,2D,BI5_043,,"60"
+;HKR,2D,BI5_050,,"60"
+;HKR,2D,BI5_051,,"60"
+;HKR,2D,BI5_053,,"60"
+;HKR,2D,BI5_060,,"60"
+;HKR,2D,BI5_061,,"60"
+;HKR,2D,BI5_063,,"60"
+;HKR,2D,BI5_070,,"60"
+;HKR,2D,BI5_071,,"60"
+;HKR,2D,BI5_073,,"60"
+;HKR,2D,BI5_080,,"60"
+;HKR,2D,BI5_081,,"60"
+;HKR,2D,BI5_083,,"60"
+;HKR,2D,BI5_090,,"60"
+;HKR,2D,BI5_091,,"60"
+;HKR,2D,BI5_093,,"60"
+;HKR,2D,BI5_0D0,,"60"
+;HKR,2D,BI5_0D1,,"60"
+;HKR,2D,BI5_0D3,,"60"
+;HKR,2D,BI6_000,,"60,75"
+;HKR,2D,BI6_001,,"60,75"
+;HKR,2D,BI6_003,,"60,75"
+;HKR,2D,BI6_010,,",60,75"
+;HKR,2D,BI6_011,,",60,75"
+;HKR,2D,BI6_013,,",60,75"
+;HKR,2D,BI6_020,,",60,75"
+;HKR,2D,BI6_021,,",60,75"
+;HKR,2D,BI6_023,,",60,75"
+;HKR,2D,BI6_030,,",60,75"
+;HKR,2D,BI6_031,,",60,75"
+;HKR,2D,BI6_033,,",60,75"
+;HKR,2D,BI6_040,,"60"
+;HKR,2D,BI6_041,,"60"
+;HKR,2D,BI6_043,,"60"
+;HKR,2D,BI6_050,,"60"
+;HKR,2D,BI6_051,,"60"
+;HKR,2D,BI6_053,,"60"
+;HKR,2D,BI6_060,,"60"
+;HKR,2D,BI6_061,,"60"
+;HKR,2D,BI6_063,,"60"
+;HKR,2D,BI6_090,,"60"
+;HKR,2D,BI6_091,,"60"
+;HKR,2D,BI6_093,,"60"
+;HKR,2D,BI6_0A0,,"60"
+;HKR,2D,BI6_0A1,,"60"
+;HKR,2D,BI6_0A3,,"60"
+;HKR,2D,BI6_0B0,,"60"
+;HKR,2D,BI6_0B1,,"60"
+;HKR,2D,BI6_0B3,,"60"
+;HKR,2D,BI6_0E0,,"60"
+;HKR,2D,BI6_0E1,,"60"
+;HKR,2D,BI6_0E3,,"60"
+;HKR,2D,BI6_0F0,,"60"
+;HKR,2D,BI6_0F1,,"60"
+;HKR,2D,BI6_0F3,,"60"
+;
+;HKR,2D,BI1_00,,"1"
+;HKR,2D,BI1_01,,"2"
+;HKR,2D,BI1_02,,"2"
+;HKR,2D,BI1_03,,"2"
+;HKR,2D,BI1_04,,"1"
+;HKR,2D,BI1_05,,"1"
+;HKR,2D,BI1_06,,"1"
+;HKR,2D,BI1_07,,"1"
+;HKR,2D,BI1_08,,"1"
+;HKR,2D,BI1_09,,"1"
+;HKR,2D,BI1_0A,,"1"
+;;HKR,2D,BI1_0B,,"1"
+;HKR,2D,BI1_0C,,"1"
+;;HKR,2D,BI1_0D,,"1"
+;HKR,2D,BI1_0E,,"1"
+;;HKR,2D,BI1_0F,,"1"
+;HKR,2D,BI2_00,,"1"
+;HKR,2D,BI2_01,,"2"
+;HKR,2D,BI2_02,,"2"
+;HKR,2D,BI2_03,,"2"
+;HKR,2D,BI2_04,,"1"
+;HKR,2D,BI2_05,,"1"
+;HKR,2D,BI2_06,,"1"
+;HKR,2D,BI2_07,,"1"
+;HKR,2D,BI2_08,,"1"
+;HKR,2D,BI2_09,,"1"
+;;HKR,2D,BI2_0C,,"1"
+;;HKR,2D,BI2_0D,,"1"
+;HKR,2D,BI6_00,,"1"
+;HKR,2D,BI6_01,,"2"
+;HKR,2D,BI6_02,,"2"
+;HKR,2D,BI6_03,,"2"
+;HKR,2D,BI6_04,,"1"
+;HKR,2D,BI6_05,,"1"
+;HKR,2D,BI6_06,,"1"
+;HKR,2D,BI6_07,,"1"
+;HKR,2D,BI6_08,,"1"
+;HKR,2D,BI6_09,,"1"
+;HKR,2D,BI6_0A,,"1"
+;HKR,2D,BI6_0B,,"1"
+;HKR,2D,BI6_0E,,"1"
+;HKR,2D,BI6_0F,,"1"
+
+HKR,Utility,StretchBlt,0x00010001,1
+HKR,Utility,YUVBlt,0x00010001,1
+HKR,Utility,2Overlay,0x00010001,1
+HKR,Utility,Overlay1withCRT1,0x00010001,0
+
+HKR,Utility,DXVA,0x00010001,1
+HKR,Utility,UseOverlayInMirror,0x00010001,1
+
+
+
+HKR,3D,3DCOMMAND,0x00010001,0x00000003
+HKR,3D,AAEnable,0x00010001,0x00000000
+HKR,3D,ArbFavEng,0x00010001,0x00000000
+HKR,3D,ColorCache,0x00010001,0x00000001
+HKR,3D,FavorEng,0x00010001,0x00000001
+HKR,3D,FrontBuffer,0x00010001,0x00000000
+HKR,3D,GL_FSAA,0x00010001,0x00000000
+HKR,3D,GL_FSAAMode,0x00010001,0x00000000
+HKR,3D,GL_Multi_Texture,0x00010001,0x00000001
+HKR,3D,GL_Use_16_ZBuf,0x00010001,0x00000000
+HKR,3D,GlassesWire,0x00010001,0x00000001
+HKR,3D,GLStereo,0x00010001,0x00000000
+HKR,3D,HKeyFlag,0x00010001,0x00000300
+HKR,3D,MaxFrameQueued,0x00010001,0x00000003
+HKR,3D,SOffset,0x00010001,0x00000004
+HKR,3D,SScale,0x00010001,0x00000004
+HKR,3D,Stereo,0x00010001,0x00000000
+HKR,3D,TexCache,0x00010001,0x00000001
+HKR,3D,ZCache,0x00010001,0x00000001
+HKR,3D,ZBias,0x00010001,0x00000000
+HKR,3D,ZPreTest,0x00010001,0x00000001
+HKR,3D,ZTest,0x00010001,0x00000001
+HKR,3D,ZWrite,0x00010001,0x00000001
+HKR,3D,ColorEquNoWrite,0x00010001,0x00000001
+HKR,3D,DACLevel2,0x00010001,0x00000001
+
+[DEV_6330.AddReg]
+HKR,,SWKeyIdentifier,,"Xabre"
+HKR,3D,BufferMode,0x00010001,0x00000001
+HKR,3D,TnLEnable,0x00010001,0x00000001
+HKR,3D,ArbiterSafeMode,0x00010001,0x00000001
+HKR,3D,SafeReadReg,0x00010001,0x00000001
+
+[Inst.AddReg]
+HKLM,Software\Microsoft\Windows\CurrentVersion\RunOnce,Inst,,"Rundll32.exe SiSPInst.dll,Install %01%,Sisgr.inf"
+HKCR,CLSID\{A9F793C1-4ECB-11d5-9B30-1000060995E9}\InProcServer32,ThreadingModel,,Apartment
+HKR,"shellex\PropertySheetHandlers\SiS Utility Manager","", STRING, "{A9F793C1-4ECB-11d5-9B30-1000060995E9}"
+
+[Util.DelReg]
+HKLM,SOFTWARE\SiS
+HKLM,SOFTWARE\Microsoft\Windows\CurrentVersion\Run, SiSPower
+HKR,shellex
+HKR,Utility
+HKR,,HardwareKey
+
+[Strings]
+Provider="SiS"
+Mfg="SiS"
+
+SiS.Product.DeviceDesc1       ="SiS Mirage Graphics"
+SiS.Product.DeviceDesc2       ="SiS Mirage Graphics"
+SiS.Product.DeviceDesc3       ="SiS Mirage 3 Graphics"
+SiS.Product.DeviceDesc4       ="SiS Mirage 3 Graphics"
+SiS.Product.DeviceDesc5       ="SiS Mirage 3 Graphics"
+Vender.Acer.DeviceDesc1       ="SiS 760"
+Vender.Acer.DeviceDesc2       ="SiS 661FX"
+Vender.Acer.DeviceDesc3       ="SiS M661MX"
+Vender.Acer.DeviceDesc4       ="SiS M760GX"
+Vender.AOpen.DeviceDesc1      ="SiS 661FX"
+Vender.AOpen.DeviceDesc2      ="SiS 661FX"
+Vender.AOpen.DeviceDesc3      ="SiS 661FX"
+Vender.AOpen.DeviceDesc4      ="SiS 661FX"
+Vender.AOpen.DeviceDesc5      ="SiS 661FX"
+Vender.AOpen.DeviceDesc6      ="SiS 661FX"
+Vender.AOpen.DeviceDesc7      ="SiS 661FX"
+Vender.AOpen.DeviceDesc8      ="SiS 760"
+Vender.AOpen.DeviceDesc9      ="SiS 760"
+Vender.AOpen.DeviceDesc10     ="SiS 661FX"
+Vender.AOpen.DeviceDesc11     ="SiS 651C"
+Vender.AOpen.DeviceDesc12     ="SiS Mirage Graphics"
+Vender.ASRock.DeviceDesc1     ="SiS 661FX"
+Vender.ASRock.DeviceDesc2     ="SiS 661FX"
+Vender.ASRock.DeviceDesc3     ="SiS 741"
+Vender.ASRock.DeviceDesc4     ="SiS 651"
+Vender.ASRock.DeviceDesc5     ="SiS 760"
+Vender.ASRock.DeviceDesc6     ="SiS Mirage Graphics"
+Vender.ASUS.DeviceDesc1       ="SiS M661FX/M661MX"
+Vender.ASUS.DeviceDesc2       ="SiS 661FX"
+Vender.ASUS.DeviceDesc3       ="SiS 651"
+Vender.ASUS.DeviceDesc4       ="SiS 651_661FX_741_760_760GX_M661FX_M661MX_M741_M760_M760GX"
+Vender.ASUS.DeviceDesc5       ="SiS M760GX"
+Vender.ASUS.DeviceDesc6       ="SiS 661 series"
+Vender.ASUS.DeviceDesc7       ="SiS M661FX/M661MX"
+Vender.ASUS.DeviceDesc8       ="SiS Mirage Graphics"
+Vender.ASUS.DeviceDesc9       ="SiS Mirage Graphics"
+Vender.ASUS.DeviceDesc10      ="SiS Mirage Graphics"
+Vender.ASUS.DeviceDesc11      ="SiS Mirage Graphics"
+Vender.Bioster.DeviceDesc1    ="SiS 661FX"
+Vender.Clevo.DeviceDesc1      ="SiS M661FX"
+Vender.Clevo.DeviceDesc2      ="SiS M661MX"
+Vender.Compal.DeviceDesc1     ="SiS M661FX"
+Vender.DFI.DeviceDesc1        ="SiS Mirage Graphics"
+Vender.ECS.DeviceDesc1        ="SiS M661MX"
+Vender.ECS.DeviceDesc2        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc3        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc4        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc5        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc6        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc7        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc8        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc9        ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc10       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc11       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc12       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc13       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc14       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc15       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc16       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc17       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc18       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc19       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc20       ="SiS 650/651/740/661FX/741/760 series"
+Vender.ECS.DeviceDesc21       ="S4-5/S4-6"
+Vender.ECS.DeviceDesc22       ="SiS Mirage Graphics"
+Vender.ECS.DeviceDesc23       ="SiS Mirage Graphics"
+Vender.ECS.DeviceDesc24       ="SiS Mirage Graphics"
+Vender.Epox.DeviceDesc1       ="SiS 661FX"
+Vender.Epox.DeviceDesc2       ="SiS 661FX"
+Vender.Epox.DeviceDesc3       ="SiS Mirage Graphics"
+Vender.Epox.DeviceDesc4       ="SiS Mirage Graphics"
+Vender.F.DeviceDesc1          ="SiS 741"
+Vender.F.DeviceDesc2          ="SiS 651C"
+Vender.F.DeviceDesc3          ="SiS Mirage 3 Graphics"
+Vender.F.DeviceDesc4          ="SiS Mirage 3 Graphics"
+Vender.FIC.DeviceDesc1        ="SiS M661FX"
+Vender.FIC.DeviceDesc2        ="SiS M741"
+Vender.FIC.DeviceDesc3        ="SiS M661FX"
+Vender.Foxconn.DeviceDesc1    ="SiS 661FX"
+Vender.Foxconn.DeviceDesc2    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc3    ="SiS 661FX/GX Mirage Graphics"
+Vender.Foxconn.DeviceDesc4    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc5    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc6    ="SiS 650/651 Series"
+Vender.Foxconn.DeviceDesc7    ="SiS 661FX"
+Vender.Foxconn.DeviceDesc8    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc9    ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc10   ="SiS 760"
+Vender.Foxconn.DeviceDesc11   ="SiS 661FX"
+Vender.Foxconn.DeviceDesc12   ="SiS 661FX/GX Mirage Graphics"
+Vender.Foxconn.DeviceDesc13   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc14   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc15   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc16   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc17   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc18   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc19   ="SiS 650/651/740/661FX/741/760 series"
+Vender.Foxconn.DeviceDesc20   ="SiS 661FX/GX Mirage Graphics"
+Vender.Foxconn.DeviceDesc21   ="SiS 661FX/GX Mirage Graphics"
+Vender.Foxconn.DeviceDesc22   ="SiS 650/651/740/661FX/741/760/761GX series"
+Vender.Foxconn.DeviceDesc23   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc24   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc25   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc26   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc27   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc28   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc29   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc30   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc31   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc32   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc33   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc34   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc35   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc36   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc37   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc38   ="SiS Mirage Graphics"
+Vender.Foxconn.DeviceDesc39   ="SiS Mirage Graphics"
+Vender.FSC.DeviceDesc1        ="SiS M760"
+Vender.FSC.DeviceDesc2        ="Fujitsu Siemens Computers SiS661FX on board Graphics"
+Vender.FSC.DeviceDesc3        ="Fujitsu Siemens Computers SiS761GX on board Graphics"
+Vender.Gigabyte.DeviceDesc1   ="SiS 661FX"
+Vender.Gigabyte.DeviceDesc2   ="SiS 661FXMIU"
+Vender.Gigabyte.DeviceDesc3   ="SiS Mirage 3 Graphics"
+Vender.HP.DeviceDesc1         ="SiS 760"
+Vender.HP.DeviceDesc2         ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc1     ="SiS M661MX"
+Vender.Lenovo.DeviceDesc2     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc3     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc4     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc5     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc6     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc7     ="SiS Mirage Graphics"
+Vender.Lenovo.DeviceDesc8     ="SiS Mirage 3 Graphics"
+Vender.LiteON.DeviceDesc1     ="SiS 661FX"
+Vender.LiteON.DeviceDesc2     ="SiS Mirage Graphics"
+Vender.MSI.DeviceDesc1        ="SiS M741"
+Vender.MSI.DeviceDesc2        ="SiS M661MX"
+Vender.MSI.DeviceDesc3        ="SiS 661FX"
+Vender.MSI.DeviceDesc4        ="SiS 661FX"
+Vender.MSI.DeviceDesc5        ="SiS 661FX"
+Vender.MSI.DeviceDesc6        ="SiS 661FX"
+Vender.MSI.DeviceDesc7        ="SiS M760"
+Vender.MSI.DeviceDesc8        ="SiS M741"
+Vender.MSI.DeviceDesc9        ="SiS 661FX"
+Vender.MSI.DeviceDesc10       ="SiS 760GX"
+Vender.MSI.DeviceDesc11       ="SiS Mirage Graphics"
+Vender.MSI.DeviceDesc12       ="SiS Mirage Graphics"
+Vender.MTC.DeviceDesc1        ="SiS M661FX"
+Vender.MTC.DeviceDesc2        ="SiS M661FX"
+Vender.NEC.DeviceDesc1        ="SiS 760"
+Vender.NEC.DeviceDesc2        ="SiS M760GX"
+Vender.NEC.DeviceDesc3        ="SiS Mirage Graphics"
+Vender.NEC.DeviceDesc4        ="SiS Mirage Graphics"
+Vender.NECCI.DeviceDesc1      ="SiS 651C"
+Vender.NECCI.DeviceDesc2      ="SiS M760GX"
+Vender.NECCI.DeviceDesc3      ="SiS Mirage Graphics"
+Vender.Quanta.DeviceDesc1     ="SiS Mirage Graphics"
+Vender.Quanta.DeviceDesc2     ="SiS Mirage Graphics"
+Vender.Quanta.DeviceDesc3     ="SiS Mirage 3 Graphics"
+Vender.Shuttle.DeviceDesc1    ="SiS Mirage Graphics"
+Vender.Sony.DeviceDesc1       ="SiS 661FX"
+Vender.TCL.DeviceDesc1        ="SiS Mirage Graphics"
+Vender.USI.DeviceDesc1        ="SiS Mirage Graphics"
+Vender.USI.DeviceDesc2        ="SiS Mirage Graphics"
+Vender.UniWill.DeviceDesc1    ="SiS M760"
+Vender.UniWill.DeviceDesc2    ="SiS M760/M760GX"
+Vender.UniWill.DeviceDesc3    ="SiS M760/760GX"
+Vender.Wistron.DeviceDesc1    ="SiS M661FX"
+Vender.Wistron.DeviceDesc2    ="SiS Mirage Graphics"
+Vender.Dell.DeviceDesc1       ="SiS Mirage 3 Graphics"
+Vender.Dell.DeviceDesc2       ="SiS Mirage 3 Graphics"
+Vender.Pegatron.DeviceDesc1   ="SiS Mirage 3 Graphics"
+
+; Desktop="Desktop"
+DefaultMode="16,800,600"

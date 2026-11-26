@@ -1,0 +1,163 @@
+; Copyright (c) 2000-2006, Silicon Integrated Systems Corp.
+
+[version]
+signature="$CHICAGO$"
+Class=System
+ClassGUID={CED58E00-E9A6-11D1-80CE-00A0C9696BAE}
+Provider=%SiS%
+DriverVer=05/16/2006,7.2.0.1220
+
+[Manufacturer]
+%SiS_MFG%=SiS_SYS
+
+[SourceDisksNames]
+1 = "SiS AGP Driver Disk for Windows",,0
+
+[SourceDisksFiles]
+SISAGP.PCI = 1
+
+[DestinationDirs]
+AGPCopyFiles = 11
+
+[SiS_SYS]
+%SIS.AGP.DeviceDesc%=AGP_BRIDGE_DRV, PCI\VEN_1039&DEV_0001
+%SIS.AGP.DeviceDesc%=AGP_BRIDGE_DRV, PCI\VEN_1039&DEV_0002
+%SIS.AGP.DeviceDesc%=AGP_BRIDGE_DRV, PCI\VEN_1039&DEV_0003
+
+[AGP_BRIDGE_DRV]
+AddReg=AddGARTMiniport,AGP_DRV_AddReg
+CopyFiles=AGPCopyFiles
+
+[AGP_DRV_AddReg]
+HKR,,DevLoader,,
+
+[AddGARTMiniport]
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\55911039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\55911039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\55911039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\56001039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\56001039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\56001039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\05301039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\05301039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\05301039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\05401039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\05401039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\05401039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06201039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06201039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06201039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06301039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06301039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06301039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06351039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06351039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06351039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06401039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06401039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06401039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06451039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06451039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06451039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06461039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06461039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06461039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06481039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06481039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06481039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06491039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06491039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06491039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06501039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06501039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06501039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06511039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06511039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06511039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06521039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06521039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06521039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06551039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06551039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06551039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06561039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06561039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06561039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06581039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06581039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06581039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06591039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06591039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06591039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06601039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06601039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06601039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06611039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06611039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06611039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06621039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06621039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06621039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06631039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06631039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06631039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06711039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06711039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06711039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06721039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06721039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\06721039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07301039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07301039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07301039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07351039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07351039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07351039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07401039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07401039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07401039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07411039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07411039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07411039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07451039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07451039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07451039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07461039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07461039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07461039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07481039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07481039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07481039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07551039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07551039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07551039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07561039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07561039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07561039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07601039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07601039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07601039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07611039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07611039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07611039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07621039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07621039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07621039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07701039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07701039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07701039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07711039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07711039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07711039,Instance,1,00,00,00,00
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07721039,Name,,"SiS chipset"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07721039,Path,,"SISAGP.PCI"
+HKLM,System\CurrentControlSet\Services\VxD\PCI\GARTMiniports\07721039,Instance,1,00,00,00,00
+
+
+[AGPCopyFiles]
+SISAGP.PCI
+
+[Strings]
+SiS                              = "SiS"
+SiS_MFG                          = "SiS AGP Chipset"
+SIS.AGP.DeviceDesc = "SiS Accelerated Graphics Port"
