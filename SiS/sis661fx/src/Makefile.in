@@ -130,7 +130,8 @@ am__installdirs = "$(DESTDIR)$(sis661fx_drv_ladir)"
 LTLIBRARIES = $(sis661fx_drv_la_LTLIBRARIES)
 sis661fx_drv_la_LIBADD =
 am_sis661fx_drv_la_OBJECTS = sis661fx_driver.lo sis661fx_mmio.lo \
-	sis661fx_mode.lo sis661fx_accel.lo sis661fx_cursor.lo
+	sis661fx_mode.lo sis661fx_accel.lo sis661fx_cursor.lo \
+	sis661fx_video.lo
 sis661fx_drv_la_OBJECTS = $(am_sis661fx_drv_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -158,7 +159,7 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/sis661fx_accel.Plo \
 	./$(DEPDIR)/sis661fx_cursor.Plo \
 	./$(DEPDIR)/sis661fx_driver.Plo ./$(DEPDIR)/sis661fx_mmio.Plo \
-	./$(DEPDIR)/sis661fx_mode.Plo
+	./$(DEPDIR)/sis661fx_mode.Plo ./$(DEPDIR)/sis661fx_video.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -364,7 +365,8 @@ sis661fx_drv_la_SOURCES = \
 	sis661fx_mmio.c \
 	sis661fx_mode.c \
 	sis661fx_accel.c \
-	sis661fx_cursor.c
+	sis661fx_cursor.c \
+	sis661fx_video.c
 
 all: all-am
 
@@ -447,6 +449,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sis661fx_driver.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sis661fx_mmio.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sis661fx_mode.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sis661fx_video.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -614,6 +617,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/sis661fx_driver.Plo
 	-rm -f ./$(DEPDIR)/sis661fx_mmio.Plo
 	-rm -f ./$(DEPDIR)/sis661fx_mode.Plo
+	-rm -f ./$(DEPDIR)/sis661fx_video.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -664,6 +668,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/sis661fx_driver.Plo
 	-rm -f ./$(DEPDIR)/sis661fx_mmio.Plo
 	-rm -f ./$(DEPDIR)/sis661fx_mode.Plo
+	-rm -f ./$(DEPDIR)/sis661fx_video.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

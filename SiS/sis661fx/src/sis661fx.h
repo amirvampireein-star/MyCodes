@@ -55,6 +55,8 @@ typedef struct {
     /* Accel */
     Bool useAccel;
     Bool noAccel;
+    void *exa;
+    void *exaPriv;
 
     /* Cursor */
     xf86CursorInfoPtr cursorInfo;
@@ -97,5 +99,6 @@ void sis661fx_unlock(Sis661fxPtr p);
 Bool sis661fx_accel_init(ScreenPtr pScreen);
 /* cursor */
 Bool sis661fx_cursor_init(ScreenPtr pScreen);
+Bool sis661fx_video_init(ScreenPtr pScreen);
 
 #endif

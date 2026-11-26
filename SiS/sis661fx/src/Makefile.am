@@ -9,4 +9,5 @@ sis661fx_drv_la_SOURCES = \
 	sis661fx_mmio.c \
 	sis661fx_mode.c \
 	sis661fx_accel.c \
-	sis661fx_cursor.c
+	sis661fx_cursor.c \
+	sis661fx_video.c

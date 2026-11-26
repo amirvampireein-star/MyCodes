@@ -36,6 +36,24 @@ static Bool SIS661FXSwitchMode(SWITCH_MODE_ARGS_DECL);
 static void SIS661FXAdjustFrame(ADJUST_FRAME_ARGS_DECL);
 static Bool SIS661FXEnterVT(VT_FUNC_ARGS_DECL);
 static void SIS661FXLeaveVT(VT_FUNC_ARGS_DECL);
+
+static void SIS661FXDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
+{
+    Sis661fxPtr p = SIS661FX(pScrn);
+    uint8_t seq1 = sis661fx_read_idx(p, SIS_VGA_SEQ_INDEX, 0x01);
+    (void)flags;
+    sis661fx_outb(p, SIS_VGA_SEQ_INDEX, 0x01);
+    switch (mode) {
+    case DPMSModeOn: sis661fx_outb(p, SIS_VGA_SEQ_DATA, seq1 & ~0x20); sis661fx_rmw_idx(p, SIS_VGA_CRTC_INDEX, 0x17, 0x7F, 0x00); break;
+    case DPMSModeStandby:
+    case DPMSModeSuspend:
+    case DPMSModeOff:
+        sis661fx_outb(p, SIS_VGA_SEQ_DATA, seq1 | 0x20);
+        sis661fx_rmw_idx(p, SIS_VGA_CRTC_INDEX, 0x17, 0x7F, 0x80);
+        break;
+    }
+}
+
 static Bool SIS661FXCloseScreen(CLOSE_SCREEN_ARGS_DECL);
 static void SIS661FXFreeScreen(FREE_SCREEN_ARGS_DECL);
 
@@ -322,6 +340,7 @@ static Bool SIS661FXCreateScreenResources(ScreenPtr pScreen)
     return ret;
 }
 
+
 static Bool SIS661FXCloseScreen(CLOSE_SCREEN_ARGS_DECL)
 {
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
@@ -382,7 +401,8 @@ static Bool SIS661FXScreenInit(SCREEN_INIT_ARGS_DECL)
     xf86SetBlackWhitePixels(pScreen);
     sis661fx_accel_init(pScreen);
     sis661fx_cursor_init(pScreen);
-    xf86DPMSInit(pScreen, xf86DPMSSet, 0);
+    sis661fx_video_init(pScreen);
+    xf86DPMSInit(pScreen, SIS661FXDPMSSet, 0);
     xf86SetBackingStore(pScreen);
     xf86SetSilkenMouse(pScreen);
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
