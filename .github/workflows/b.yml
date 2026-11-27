@@ -15,7 +15,7 @@ jobs:
   test:
     name: Qwen API Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     env:
       PORT: "3265"
@@ -39,6 +39,50 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install Chromium with Playwright
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Installing Playwright..."
+
+          npm install --no-save --no-audit --no-fund playwright
+
+          echo "Installing Chromium and system dependencies..."
+
+          npx playwright install --with-deps chromium
+
+          echo "Chromium installation completed."
+
+      - name: Verify Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node <<'NODE'
+          const { chromium } = require('playwright');
+
+          async function main() {
+            const browser = await chromium.launch({
+              headless: true
+            });
+
+            const page = await browser.newPage();
+
+            await page.goto('about:blank');
+
+            console.log('Chromium launched successfully.');
+            console.log('Browser version:', browser.version());
+
+            await browser.close();
+          }
+
+          main().catch(error => {
+            console.error('Chromium verification failed:', error.message);
+            process.exitCode = 1;
+          });
+          NODE
+
       - name: Check project files
         shell: bash
         run: |
@@ -53,7 +97,7 @@ jobs:
 
           echo "QwenFreeApi project found."
 
-      - name: Install dependencies
+      - name: Install project dependencies
         run: npm install --no-audit --no-fund
 
       - name: Validate JavaScript syntax
@@ -133,7 +177,6 @@ jobs:
 
           echo "Qwen API server started."
           echo "PID: $SERVER_PID"
-          echo "Log file: $LOG_FILE"
 
       - name: Wait for server
         shell: bash
@@ -309,7 +352,6 @@ jobs:
             if kill -0 "$SERVER_PID" 2>/dev/null; then
               echo "Stopping Qwen server: $SERVER_PID"
               kill "$SERVER_PID"
-              wait "$SERVER_PID" 2>/dev/null || true
             fi
           fi
 
@@ -327,6 +369,7 @@ jobs:
 
           if [ -f "$LOG_FILE" ]; then
             cat "$LOG_FILE"
+
             echo
             echo "=========================================="
             echo "Total log lines: $(wc -l < "$LOG_FILE")"
@@ -335,7 +378,7 @@ jobs:
             echo "Server log file was not created."
           fi
 
-      - name: Save server logs
+      - name: Upload server logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
