@@ -1,0 +1,244 @@
+
+name: QwenFreeApi Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qwenfreeapi-test
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test QwenFreeApi
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      PORT: 3265
+      DEFAULT_MODEL: qwen3.8-max
+      LOG_LEVEL: warn
+      QWEN_WORKSPACE: ${{ runner.temp }}/qwen-workspace
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm install --no-audit --no-fund
+
+      - name: Check JavaScript syntax
+        run: |
+          set -euo pipefail
+
+          node --check server.js
+
+          while IFS= read -r file; do
+            node --check "$file"
+          done < <(find src scripts public -type f -name '*.js' 2>/dev/null)
+
+          echo "All JavaScript syntax checks passed."
+
+      - name: Run offline tests
+        run: |
+          npm test
+
+      - name: Configure Qwen account from JWT secret
+        env:
+          JWT: ${{ secrets.JWT }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${JWT:-}" ]; then
+            echo "::error::GitHub Secret JWT is missing."
+            exit 1
+          fi
+
+          node <<'NODE'
+          const accountStore = require('./src/account-store');
+
+          accountStore.load();
+
+          accountStore.save({
+            token: process.env.JWT,
+            email: 'github-actions',
+            cookie: [],
+            savedAt: Date.now(),
+            failures: 0,
+            unavailableUntil: 0,
+            lastError: ''
+          }, 'github-actions');
+
+          console.log('Qwen account configured successfully.');
+          NODE
+
+      - name: Start QwenFreeApi and test endpoints
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$QWEN_WORKSPACE"
+
+          node server.js > "$RUNNER_TEMP/qwen-server.log" 2>&1 &
+          SERVER_PID=$!
+
+          cleanup() {
+            kill "$SERVER_PID" 2>/dev/null || true
+            wait "$SERVER_PID" 2>/dev/null || true
+          }
+
+          trap cleanup EXIT
+
+          echo "Waiting for QwenFreeApi..."
+
+          READY=0
+
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3265/healthz >/dev/null; then
+              READY=1
+              break
+            fi
+
+            if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+              echo "::error::Server process exited."
+              cat "$RUNNER_TEMP/qwen-server.log"
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          if [ "$READY" -ne 1 ]; then
+            echo "::error::Server startup timed out."
+            cat "$RUNNER_TEMP/qwen-server.log"
+            exit 1
+          fi
+
+          echo "Server is ready."
+
+          node <<'NODE'
+          const BASE = 'http://127.0.0.1:3265';
+
+          async function request(path, options = {}) {
+            const response = await fetch(`${BASE}${path}`, {
+              ...options,
+              signal: AbortSignal.timeout(120000)
+            });
+
+            const text = await response.text();
+
+            let data;
+            try {
+              data = JSON.parse(text);
+            } catch {
+              throw new Error(`${path}: invalid JSON response (HTTP ${response.status})`);
+            }
+
+            if (!response.ok) {
+              const message = String(data?.error?.message || 'Request failed');
+
+              if (/captcha|waf|x5secdata|_____tmd_____/i.test(message + text)) {
+                throw new Error(
+                  `${path}: Qwen upstream security challenge detected (HTTP ${response.status}).`
+                );
+              }
+
+              throw new Error(
+                `${path}: HTTP ${response.status} - ${message.slice(0, 300)}`
+              );
+            }
+
+            return data;
+          }
+
+          async function main() {
+            console.log('\n[1/4] Testing healthz...');
+            const healthz = await request('/healthz');
+
+            if (!healthz.ok || healthz.account !== 'loaded') {
+              throw new Error('Health check failed or Qwen account was not loaded.');
+            }
+
+            console.log('Healthz: OK');
+
+            console.log('\n[2/4] Testing health...');
+            const health = await request('/health');
+
+            if (!health.ok || health.account !== 'loaded') {
+              throw new Error('Account health check failed.');
+            }
+
+            console.log(`Account: ${health.account}`);
+            console.log(`SSXMOD: ${health.ssxmod}`);
+
+            console.log('\n[3/4] Testing models...');
+            const models = await request('/v1/models');
+
+            if (!Array.isArray(models.data) || models.data.length === 0) {
+              throw new Error('No models returned.');
+            }
+
+            const model = 'qwen3.8-max';
+
+            if (!models.data.some(item => item.id === model)) {
+              throw new Error(`Expected model ${model} was not found.`);
+            }
+
+            console.log(`Models: ${models.data.length}`);
+            console.log(`Selected model: ${model}`);
+
+            console.log('\n[4/4] Testing real Qwen completion...');
+
+            const result = await request('/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer local'
+              },
+              body: JSON.stringify({
+                model,
+                messages: [
+                  {
+                    role: 'user',
+                    content: 'Reply with exactly: QWEN_OK'
+                  }
+                ],
+                stream: false,
+                temperature: 0
+              })
+            });
+
+            const answer = result?.choices?.[0]?.message?.content;
+
+            if (typeof answer !== 'string' || answer.trim().length === 0) {
+              throw new Error('Qwen returned an empty completion.');
+            }
+
+            console.log('Qwen completion received successfully.');
+            console.log(`Response: ${answer.slice(0, 300)}`);
+
+            console.log('\nAll tests passed.');
+          }
+
+          main().catch(error => {
+            console.error(`TEST FAILED: ${error.message}`);
+            process.exitCode = 1;
+          });
+          NODE
+
+      - name: Show server diagnostics
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/qwen-server.log" ]; then
+            echo "Server logs (sensitive values should not be added here):"
+            tail -n 100 "$RUNNER_TEMP/qwen-server.log"
+          fi
