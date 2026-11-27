@@ -19,7 +19,6 @@ jobs:
 
     env:
       PORT: "3265"
-      QWEN_WORKSPACE: ${{ runner.temp }}/qwen-workspace
       PUPPETEER_SKIP_DOWNLOAD: "true"
       LOG_LEVEL: "warn"
 
@@ -107,6 +106,8 @@ jobs:
 
       - name: Start Qwen API server
         shell: bash
+        env:
+          QWEN_WORKSPACE: ${{ runner.temp }}/qwen-workspace
         run: |
           set -euo pipefail
 
@@ -161,6 +162,7 @@ jobs:
             const body = await response.text();
 
             let data;
+
             try {
               data = JSON.parse(body);
             } catch {
@@ -181,9 +183,7 @@ jobs:
                 );
               }
 
-              throw new Error(
-                `${path}: HTTP ${response.status}`
-              );
+              throw new Error(`${path}: HTTP ${response.status}`);
             }
 
             return data;
@@ -194,7 +194,7 @@ jobs:
 
             const healthz = await request('/healthz');
 
-            if (healthz.ok !== true) {
+            if (healthz?.ok !== true) {
               throw new Error('/healthz returned an unhealthy status.');
             }
 
@@ -208,7 +208,10 @@ jobs:
 
             const health = await request('/health');
 
-            if (health.ok !== true || health.account !== 'loaded') {
+            if (
+              health?.ok !== true ||
+              health.account !== 'loaded'
+            ) {
               throw new Error('/health check failed.');
             }
 
@@ -218,7 +221,10 @@ jobs:
 
             const models = await request('/v1/models');
 
-            if (!Array.isArray(models.data) || models.data.length === 0) {
+            if (
+              !Array.isArray(models?.data) ||
+              models.data.length === 0
+            ) {
               throw new Error('No models returned by the API.');
             }
 
@@ -230,7 +236,9 @@ jobs:
               throw new Error('Expected model qwen3.8-max was not found.');
             }
 
-            console.log(`Models endpoint passed (${models.data.length} models).`);
+            console.log(
+              `Models endpoint passed (${models.data.length} models).`
+            );
 
             console.log('Testing /v1/chat/completions ...');
 
@@ -288,7 +296,7 @@ jobs:
           echo "The workflow failed."
 
           if [ -f "$RUNNER_TEMP/qwen-server.log" ]; then
-            echo "Server log summary:"
+            echo "Server diagnostic summary:"
 
             grep -Ei 'error|fatal|listening|started|failed' \
               "$RUNNER_TEMP/qwen-server.log" \
