@@ -3,6 +3,10 @@ name: Web RDP on Ubuntu (Guacamole + Cloudflare Tunnel)
 on:
   workflow_dispatch:
 
+env:
+  PROXY_PORT: "8080"
+  LOG_DIR: "/tmp/rdp-logs"
+
 jobs:
   rdp-web:
     runs-on: ubuntu-latest
@@ -15,8 +19,9 @@ jobs:
       # ------------------------------------------------------------------
       # 1) XFCE + xrdp
       # ------------------------------------------------------------------
-      - name: Install XFCE + xrdp
+      - name: نصب XFCE و xrdp
         run: |
+          set -euo pipefail
           sudo apt-get update -qq
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
             xfce4 xfce4-goodies xrdp dbus-x11 xterm \
@@ -38,18 +43,20 @@ jobs:
       # ------------------------------------------------------------------
       # 2) Docker
       # ------------------------------------------------------------------
-      - name: Install Docker
+      - name: نصب Docker
         run: |
+          set -euo pipefail
           sudo apt-get install -y -qq docker.io docker-compose-v2
           sudo systemctl start docker
           sudo usermod -aG docker $USER
           sudo docker version
 
       # ------------------------------------------------------------------
-      # 3) Guacamole stack  (متغیرهای POSTGRESQL_* برای guacamole)
+      # 3) Guacamole stack
       # ------------------------------------------------------------------
-      - name: Setup Guacamole stack
+      - name: راه‌اندازی Guacamole
         run: |
+          set -euo pipefail
           mkdir -p ~/guac/initdb
           cd ~/guac
 
@@ -106,8 +113,9 @@ jobs:
       # ------------------------------------------------------------------
       # 4) انتظار readiness
       # ------------------------------------------------------------------
-      - name: Wait for Guacamole readiness
+      - name: انتظار آماده شدن Guacamole
         run: |
+          set -euo pipefail
           echo "Waiting for Guacamole..."
           ok=0
           for i in $(seq 1 60); do
@@ -131,8 +139,9 @@ jobs:
       # ------------------------------------------------------------------
       # 5) گرفتن توکن + ساخت connection
       # ------------------------------------------------------------------
-      - name: Configure RDP connection in Guacamole
+      - name: ساخت اتصال RDP در Guacamole
         run: |
+          set -euo pipefail
           BASE="http://localhost:8080/guacamole"
           TOKEN=""
 
@@ -203,53 +212,36 @@ jobs:
           echo
 
       # ------------------------------------------------------------------
-      # 6) Cloudflare Tunnel  (--logfile برای رفع buffering + polling 180s)
+      # 6) Cloudflare Tunnel — دقیقاً همان روش شما
       # ------------------------------------------------------------------
-      - name: Install & start cloudflared
+      - name: راه‌اندازی تونل Cloudflare
         run: |
-          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-          sudo dpkg -i cloudflared-linux-amd64.deb
+          set -euo pipefail
+          mkdir -p "$LOG_DIR"
 
-          rm -f ~/tunnel.log
-          nohup cloudflared tunnel \
-            --url http://localhost:8080 \
-            --no-autoupdate \
-            --logfile ~/tunnel.log \
-            --loglevel info > /dev/null 2>&1 &
-          echo $! > ~/tunnel.pid
+          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+          chmod +x cloudflared
 
-          echo "Waiting for tunnel URL (up to 3 minutes)..."
-          URL=""
-          for i in $(seq 1 60); do
-            URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' ~/tunnel.log 2>/dev/null | head -1 || true)
-            if [ -n "$URL" ]; then
-              echo "Got URL after $((i*3))s: $URL"
-              break
-            fi
-            if ! kill -0 $(cat ~/tunnel.pid) 2>/dev/null; then
-              echo "cloudflared exited unexpectedly"
-              cat ~/tunnel.log || true
-              exit 1
-            fi
-            sleep 3
-          done
+          nohup ./cloudflared tunnel --url "http://127.0.0.1:${PROXY_PORT}" --no-autoupdate > "$LOG_DIR/cloudflare.log" 2>&1 &
+          echo "CLOUDFLARED_PID=$!" >> "$GITHUB_ENV"
 
-          echo "----- full tunnel log -----"
-          cat ~/tunnel.log || true
-
-          if [ -z "$URL" ]; then
-            echo "::error::Could not extract tunnel URL after 180s"
+          sleep 8
+          TUNNEL_URL=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' "$LOG_DIR/cloudflare.log" | head -n1 || true)
+          if [ -z "$TUNNEL_URL" ]; then
+            echo "❌ خطا در ساخت تونل"
+            cat "$LOG_DIR/cloudflare.log"
             exit 1
           fi
-
-          echo "TUNNEL_URL=$URL" >> $GITHUB_ENV
-          echo "::notice title=Guacamole URL::$URL/guacamole"
+          echo "✅ تونل: $TUNNEL_URL"
+          echo "TUNNEL_URL=$TUNNEL_URL" >> "$GITHUB_ENV"
+          echo "$TUNNEL_URL" > opencode-url.txt
 
       # ------------------------------------------------------------------
       # 7) نمایش اطلاعات + keep-alive
       # ------------------------------------------------------------------
-      - name: Show credentials & keep alive
+      - name: نمایش اطلاعات و نگه‌داشتن job
         run: |
+          set -euo pipefail
           echo "==================================================="
           echo "  Web RDP (Guacamole) via Cloudflare Tunnel"
           echo "  URL:  $TUNNEL_URL/guacamole"
@@ -264,28 +256,19 @@ jobs:
             echo -n "xrdp: "; sudo systemctl is-active xrdp || true
             echo -n "guac http: "; curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/guacamole/ || true
 
-            if ! kill -0 $(cat ~/tunnel.pid) 2>/dev/null; then
+            if ! kill -0 "${CLOUDFLARED_PID:-0}" 2>/dev/null; then
               echo "tunnel died, restarting..."
-              rm -f ~/tunnel.log
-              nohup cloudflared tunnel \
-                --url http://localhost:8080 \
-                --no-autoupdate \
-                --logfile ~/tunnel.log \
-                --loglevel info > /dev/null 2>&1 &
-              echo $! > ~/tunnel.pid
-
-              NEW=""
-              for i in $(seq 1 60); do
-                NEW=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' ~/tunnel.log 2>/dev/null | head -1 || true)
-                [ -n "$NEW" ] && break
-                sleep 3
-              done
+              nohup ./cloudflared tunnel --url "http://127.0.0.1:${PROXY_PORT}" --no-autoupdate > "$LOG_DIR/cloudflare.log" 2>&1 &
+              echo "CLOUDFLARED_PID=$!" >> "$GITHUB_ENV"
+              sleep 8
+              NEW=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' "$LOG_DIR/cloudflare.log" | head -n1 || true)
               if [ -n "$NEW" ]; then
                 echo "::warning::Tunnel restarted, new URL: $NEW"
                 TUNNEL_URL="$NEW"
+                echo "$NEW" > opencode-url.txt
               else
-                echo "::error::Tunnel restart failed, see log"
-                cat ~/tunnel.log || true
+                echo "::error::Tunnel restart failed"
+                cat "$LOG_DIR/cloudflare.log" || true
               fi
             fi
           done
