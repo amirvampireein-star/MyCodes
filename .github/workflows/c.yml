@@ -12,6 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ------------------------------------------------------------------
+      # 1) XFCE + xrdp
+      # ------------------------------------------------------------------
       - name: Install XFCE + xrdp
         run: |
           sudo apt-get update -qq
@@ -19,36 +22,56 @@ jobs:
             xfce4 xfce4-goodies xrdp dbus-x11 xterm \
             curl wget unzip ca-certificates gnupg lsb-release
 
-          # تنظیم xrdp برای شروع XFCE
-          echo "xfce4-session" > ~/.xsession
-          sudo cp ~/.xsession /home/runner/.xsession || true
-          sudo sed -i 's/^new_cursors=true/new_cursors=false/' /etc/xrdp/xrdp.ini || true
+          # .xsession برای کاربر runner
+          echo "xfce4-session" > /home/runner/.xsession
+          chown runner:runner /home/runner/.xsession
 
-          # کاربر runner با پسورد ساده
+          # پسورد ساده کاربر runner
           echo "runner:Passw0rd!123" | sudo chpasswd
+
+          # xrdp باید در گروه ssl-cert باشد (برای TLS داخلی)
           sudo adduser xrdp ssl-cert || true
 
-          # اجازه ورود از localhost
+          # پورت xrdp
           sudo sed -i 's/^port=3389/port=3389/' /etc/xrdp/xrdp.ini
+
+          # اجازه همه کاربران
           echo "allowed_users=anybody" | sudo tee -a /etc/xrdp/sesman.ini
-          echo "startwm.sh content:"
-          cat /etc/xrdp/startwm.sh | tail -5
 
           sudo systemctl enable xrdp
           sudo systemctl restart xrdp
           sleep 3
           sudo systemctl status xrdp --no-pager || true
+          sudo ss -tlnp | grep 3389 || true
 
-      - name: Install Docker & Guacamole
+      # ------------------------------------------------------------------
+      # 2) Docker
+      # ------------------------------------------------------------------
+      - name: Install Docker
         run: |
-          # Docker
           sudo apt-get install -y -qq docker.io docker-compose-v2
           sudo systemctl start docker
           sudo usermod -aG docker $USER
+          sudo docker version
 
-          mkdir -p ~/guac && cd ~/guac
+      # ------------------------------------------------------------------
+      # 3) Guacamole stack (guacd + postgres + guacamole)
+      # ------------------------------------------------------------------
+      - name: Setup Guacamole stack
+        run: |
+          mkdir -p ~/guac/initdb
+          cd ~/guac
 
-          # guacd + guacamole + postgres با docker compose
+          # ساخت اسکیمای DB قبل از بالا آمدن postgres
+          echo "Generating init.sql..."
+          sudo docker run --rm guacamole/guacamole:latest \
+            /opt/guacamole/bin/initdb.sh --postgresql > initdb/init.sql
+          echo "init.sql size: $(wc -c < initdb/init.sql) bytes"
+          if [ ! -s initdb/init.sql ]; then
+            echo "::error::init.sql is empty"
+            exit 1
+          fi
+
           cat > docker-compose.yml <<'EOF'
           services:
             guacd:
@@ -56,6 +79,8 @@ jobs:
               restart: always
               ports:
                 - "4822:4822"
+              extra_hosts:
+                - "host.docker.internal:host-gateway"
 
             postgres:
               image: postgres:16-alpine
@@ -65,7 +90,7 @@ jobs:
                 POSTGRES_USER: guacamole_user
                 POSTGRES_PASSWORD: guacamole_pass
               volumes:
-                - ./initdb:/docker-entrypoint-initdb.d
+                - ./initdb:/docker-entrypoint-initdb.d:ro
 
             guacamole:
               image: guacamole/guacamole:latest
@@ -83,33 +108,71 @@ jobs:
                 - postgres
           EOF
 
-          # اسکیمای دیتابیس Guacamole
-          docker run --rm guacamole/guacamole:latest /opt/guacamole/bin/initdb.sh --postgresql > initdb/init.sql 2>/dev/null || {
-            mkdir -p initdb
-            docker run --rm guacamole/guacamole:latest /opt/guacamole/bin/initdb.sh --postgresql > initdb/init.sql
-          }
-          mkdir -p initdb
-          ls -la initdb/
-
           sudo docker compose up -d
-          sleep 20
+          sudo docker ps -a
 
-          # کاربر admin پیش‌فرض: guacadmin / guacadmin
-          echo "Guacamole should be up on :8080"
-          curl -s -o /dev/null -w "Guac HTTP %{http_code}\n" http://localhost:8080/ || true
+      # ------------------------------------------------------------------
+      # 4) انتظار برای readiness کامل Guacamole
+      # ------------------------------------------------------------------
+      - name: Wait for Guacamole readiness
+        run: |
+          echo "Waiting for Guacamole..."
+          ok=0
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/guacamole/ || echo "000")
+            echo "[$i] HTTP $code"
+            if [ "$code" = "200" ] || [ "$code" = "302" ] || [ "$code" = "403" ]; then
+              ok=1
+              break
+            fi
+            sleep 3
+          done
 
+          if [ "$ok" != "1" ]; then
+            echo "::error::Guacamole did not become ready"
+            sudo docker ps -a
+            echo "=== guacamole logs ==="
+            sudo docker logs $(sudo docker ps -aqf "name=guacamole") 2>&1 | tail -80 || true
+            echo "=== postgres logs ==="
+            sudo docker logs $(sudo docker ps -aqf "name=postgres") 2>&1 | tail -80 || true
+            exit 1
+          fi
+
+      # ------------------------------------------------------------------
+      # 5) گرفتن توکن + ساخت connection (با retry)
+      # ------------------------------------------------------------------
       - name: Configure RDP connection in Guacamole
         run: |
-          # ورود و ساخت connection از طریق REST API Guacamole
           BASE="http://localhost:8080/guacamole"
-          
-          # گرفتن توکن
-          TOKEN=$(curl -s -X POST "$BASE/api/tokens" \
-            --data-urlencode "username=guacadmin" \
-            --data-urlencode "password=guacadmin" | python3 -c "import sys,json;print(json.load(sys.stdin)['authToken'])")
-          echo "Token: ${TOKEN:0:10}..."
+          TOKEN=""
 
-          # ساخت connection به xrdp روی localhost
+          for attempt in $(seq 1 15); do
+            RESP=$(curl -s -X POST "$BASE/api/tokens" \
+              --data-urlencode "username=guacadmin" \
+              --data-urlencode "password=guacadmin" || true)
+            echo "attempt $attempt: $RESP" | head -c 300; echo
+            TOKEN=$(echo "$RESP" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              print(d.get('authToken', ''))
+          except Exception:
+              print('')
+          " 2>/dev/null)
+            [ -n "$TOKEN" ] && break
+            sleep 5
+          done
+
+          if [ -z "$TOKEN" ]; then
+            echo "::error::Could not obtain Guacamole authToken"
+            sudo docker logs $(sudo docker ps -aqf "name=guacamole") 2>&1 | tail -60 || true
+            sudo docker logs $(sudo docker ps -aqf "name=postgres") 2>&1 | tail -60 || true
+            exit 1
+          fi
+
+          echo "Token acquired: ${TOKEN:0:12}..."
+
+          echo "Creating RDP connection..."
           curl -s -X POST "$BASE/api/session/data/postgresql/connections?token=$TOKEN" \
             -H "Content-Type: application/json" \
             -d '{
@@ -135,9 +198,15 @@ jobs:
                 "guacd-port": "",
                 "guacd-encryption": ""
               }
-            }' | head -c 500
+            }' | head -c 800
+          echo
+          echo "Listing connections:"
+          curl -s "$BASE/api/session/data/postgresql/connections?token=$TOKEN" | head -c 800
           echo
 
+      # ------------------------------------------------------------------
+      # 6) Cloudflare Tunnel
+      # ------------------------------------------------------------------
       - name: Install & start cloudflared
         run: |
           wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
@@ -146,23 +215,31 @@ jobs:
           nohup cloudflared tunnel --url http://localhost:8080 --no-autoupdate > ~/tunnel.log 2>&1 &
           echo $! > ~/tunnel.pid
 
-          # انتظار برای گرفتن URL
           for i in $(seq 1 30); do
             if grep -q "trycloudflare.com" ~/tunnel.log; then break; fi
             sleep 2
           done
 
           URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' ~/tunnel.log | head -1)
+          if [ -z "$URL" ]; then
+            echo "::error::Could not extract tunnel URL"
+            cat ~/tunnel.log
+            exit 1
+          fi
+
           echo "TUNNEL_URL=$URL" >> $GITHUB_ENV
-          echo "::notice title=Guacamole URL::$URL"
+          echo "::notice title=Guacamole URL::$URL/guacamole"
           echo "----- tunnel log -----"
           cat ~/tunnel.log
 
+      # ------------------------------------------------------------------
+      # 7) نمایش اطلاعات + keep-alive
+      # ------------------------------------------------------------------
       - name: Show credentials & keep alive
         run: |
           echo "==================================================="
           echo "  Web RDP (Guacamole) via Cloudflare Tunnel"
-          echo "  URL:  $TUNNEL_URL"
+          echo "  URL:  $TUNNEL_URL/guacamole"
           echo ""
           echo "  Login Guacamole:"
           echo "    user: guacadmin"
@@ -173,20 +250,19 @@ jobs:
           echo "    user: runner"
           echo "    pass: Passw0rd!123"
           echo "==================================================="
-          echo ""
-          echo "  تست سلامت:"
-          curl -s -o /dev/null -w "local guac: %{http_code}\n" http://localhost:8080/
-          echo "$TUNNEL_URL/guacamole"
-          
-          # keep-alive + چاپ لاگ تونل هر ۵ دقیقه
+
+          # نگه‌داشتن job + restart تونل در صورت مرگ
           while true; do
             sleep 300
-            echo "[$(date)] tunnel url: $TUNNEL_URL"
-            echo "xrdp:"; sudo systemctl is-active xrdp
-            echo "guac:"; curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/
+            echo "[$(date)] tunnel: $TUNNEL_URL"
+            echo -n "xrdp: "; sudo systemctl is-active xrdp || true
+            echo -n "guac http: "; curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/guacamole/ || true
             if ! kill -0 $(cat ~/tunnel.pid) 2>/dev/null; then
               echo "tunnel died, restarting..."
               nohup cloudflared tunnel --url http://localhost:8080 --no-autoupdate > ~/tunnel.log 2>&1 &
               echo $! > ~/tunnel.pid
+              sleep 10
+              NEW=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' ~/tunnel.log | head -1)
+              [ -n "$NEW" ] && echo "new URL: $NEW"
             fi
           done
