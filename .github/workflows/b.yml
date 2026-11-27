@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   test:
-    name: Install, Validate and Test Qwen API
+    name: Qwen API Validation
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -22,16 +22,24 @@ jobs:
       PUPPETEER_SKIP_DOWNLOAD: "true"
       LOG_LEVEL: "warn"
 
+    defaults:
+      run:
+        working-directory: qwen-api
+
     steps:
-      - name: Checkout repository
+      - name: Checkout QwenFreeApi
         uses: actions/checkout@v4
+        with:
+          repository: angyedz/QwenFreeApi
+          path: qwen-api
+          fetch-depth: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Check required files
+      - name: Check project files
         shell: bash
         run: |
           set -euo pipefail
@@ -43,7 +51,7 @@ jobs:
             fi
           done
 
-          echo "Required files found."
+          echo "QwenFreeApi project found."
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
@@ -101,7 +109,7 @@ jobs:
             lastError: ''
           }, 'github-actions');
 
-          console.log('Qwen account configured.');
+          console.log('Qwen account configured successfully.');
           NODE
 
       - name: Start Qwen API server
@@ -118,7 +126,7 @@ jobs:
 
           echo "$SERVER_PID" > "$RUNNER_TEMP/qwen-server.pid"
 
-          echo "Qwen server started."
+          echo "Qwen API server started."
 
       - name: Wait for server
         shell: bash
@@ -156,7 +164,7 @@ jobs:
           async function request(path, options = {}) {
             const response = await fetch(`${BASE}${path}`, {
               ...options,
-              signal: AbortSignal.timeout(30000)
+              signal: AbortSignal.timeout(60000)
             });
 
             const body = await response.text();
@@ -289,15 +297,13 @@ jobs:
             kill "$SERVER_PID" 2>/dev/null || true
           fi
 
-      - name: Server diagnostic summary
+      - name: Server diagnostics
         if: failure()
         shell: bash
         run: |
-          echo "The workflow failed."
+          echo "Workflow failed."
 
           if [ -f "$RUNNER_TEMP/qwen-server.log" ]; then
-            echo "Server diagnostic summary:"
-
             grep -Ei 'error|fatal|listening|started|failed' \
               "$RUNNER_TEMP/qwen-server.log" \
               | sed -E \
