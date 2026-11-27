@@ -46,14 +46,13 @@ jobs:
           sudo docker version
 
       # ------------------------------------------------------------------
-      # 3) Guacamole stack  ← اینجا اصلاح اصلی است
+      # 3) Guacamole stack  (متغیرهای POSTGRESQL_* برای guacamole)
       # ------------------------------------------------------------------
       - name: Setup Guacamole stack
         run: |
           mkdir -p ~/guac/initdb
           cd ~/guac
 
-          # پاکسازی احتمالی volume های قدیمی
           sudo docker compose down -v 2>/dev/null || true
 
           echo "Generating init.sql..."
@@ -137,7 +136,6 @@ jobs:
           BASE="http://localhost:8080/guacamole"
           TOKEN=""
 
-          # ۵ بار با فاصله ۱۵ ثانیه (rate-limit = 5 در ۵ دقیقه → بعد از ۵ بار restart)
           for attempt in $(seq 1 5); do
             RESP=$(curl -s -X POST "$BASE/api/tokens" \
               --data-urlencode "username=guacadmin" \
@@ -154,7 +152,6 @@ jobs:
 
             [ -n "$TOKEN" ] && break
 
-            # اگر بلاک شدیم، کانتینر را ریستارت کن تا tracker پاک شود
             if echo "$RESP" | grep -q "Too many failed"; then
               echo "Rate limited; restarting guacamole container..."
               sudo docker restart $(sudo docker ps -aqf "name=guacamole") || true
@@ -206,31 +203,47 @@ jobs:
           echo
 
       # ------------------------------------------------------------------
-      # 6) Cloudflare Tunnel
+      # 6) Cloudflare Tunnel  (--logfile برای رفع buffering + polling 180s)
       # ------------------------------------------------------------------
       - name: Install & start cloudflared
         run: |
           wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
           sudo dpkg -i cloudflared-linux-amd64.deb
 
-          nohup cloudflared tunnel --url http://localhost:8080 --no-autoupdate > ~/tunnel.log 2>&1 &
+          rm -f ~/tunnel.log
+          nohup cloudflared tunnel \
+            --url http://localhost:8080 \
+            --no-autoupdate \
+            --logfile ~/tunnel.log \
+            --loglevel info > /dev/null 2>&1 &
           echo $! > ~/tunnel.pid
 
-          for i in $(seq 1 30); do
-            if grep -q "trycloudflare.com" ~/tunnel.log; then break; fi
-            sleep 2
+          echo "Waiting for tunnel URL (up to 3 minutes)..."
+          URL=""
+          for i in $(seq 1 60); do
+            URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' ~/tunnel.log 2>/dev/null | head -1 || true)
+            if [ -n "$URL" ]; then
+              echo "Got URL after $((i*3))s: $URL"
+              break
+            fi
+            if ! kill -0 $(cat ~/tunnel.pid) 2>/dev/null; then
+              echo "cloudflared exited unexpectedly"
+              cat ~/tunnel.log || true
+              exit 1
+            fi
+            sleep 3
           done
 
-          URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' ~/tunnel.log | head -1)
+          echo "----- full tunnel log -----"
+          cat ~/tunnel.log || true
+
           if [ -z "$URL" ]; then
-            echo "::error::Could not extract tunnel URL"
-            cat ~/tunnel.log
+            echo "::error::Could not extract tunnel URL after 180s"
             exit 1
           fi
 
           echo "TUNNEL_URL=$URL" >> $GITHUB_ENV
           echo "::notice title=Guacamole URL::$URL/guacamole"
-          cat ~/tunnel.log
 
       # ------------------------------------------------------------------
       # 7) نمایش اطلاعات + keep-alive
@@ -241,14 +254,8 @@ jobs:
           echo "  Web RDP (Guacamole) via Cloudflare Tunnel"
           echo "  URL:  $TUNNEL_URL/guacamole"
           echo ""
-          echo "  Login Guacamole:"
-          echo "    user: guacadmin"
-          echo "    pass: guacadmin"
-          echo ""
-          echo "  RDP connection (از قبل ساخته شده):"
-          echo "    name: Ubuntu RDP"
-          echo "    user: runner"
-          echo "    pass: Passw0rd!123"
+          echo "  Login Guacamole:  guacadmin / guacadmin"
+          echo "  RDP connection:   Ubuntu RDP  (runner / Passw0rd!123)"
           echo "==================================================="
 
           while true; do
@@ -256,12 +263,29 @@ jobs:
             echo "[$(date)] tunnel: $TUNNEL_URL"
             echo -n "xrdp: "; sudo systemctl is-active xrdp || true
             echo -n "guac http: "; curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/guacamole/ || true
+
             if ! kill -0 $(cat ~/tunnel.pid) 2>/dev/null; then
               echo "tunnel died, restarting..."
-              nohup cloudflared tunnel --url http://localhost:8080 --no-autoupdate > ~/tunnel.log 2>&1 &
+              rm -f ~/tunnel.log
+              nohup cloudflared tunnel \
+                --url http://localhost:8080 \
+                --no-autoupdate \
+                --logfile ~/tunnel.log \
+                --loglevel info > /dev/null 2>&1 &
               echo $! > ~/tunnel.pid
-              sleep 10
-              NEW=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' ~/tunnel.log | head -1)
-              [ -n "$NEW" ] && echo "new URL: $NEW"
+
+              NEW=""
+              for i in $(seq 1 60); do
+                NEW=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' ~/tunnel.log 2>/dev/null | head -1 || true)
+                [ -n "$NEW" ] && break
+                sleep 3
+              done
+              if [ -n "$NEW" ]; then
+                echo "::warning::Tunnel restarted, new URL: $NEW"
+                TUNNEL_URL="$NEW"
+              else
+                echo "::error::Tunnel restart failed, see log"
+                cat ~/tunnel.log || true
+              fi
             fi
           done
