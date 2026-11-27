@@ -21,6 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
 
+    env:
+      DEBIAN_FRONTEND: noninteractive
+
     steps:
 
       # ============================================================
@@ -33,10 +36,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # ============================================================
-      # 2. INSTALL XFCE + XRDP + DBUS
+      # 2. INSTALL PACKAGES
       # ============================================================
 
-      - name: Install desktop environment and XRDP
+      - name: Install XFCE XRDP and dependencies
         shell: bash
         env:
           OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
@@ -46,41 +49,37 @@ jobs:
         run: |
           set -Eeuo pipefail
 
-          echo "Updating Ubuntu packages..."
+          echo "=========================================="
+          echo "Installing Ubuntu RDP environment"
+          echo "=========================================="
 
           if ! [[ "$SESSION_MINUTES" =~ ^[0-9]+$ ]] ||
              (( SESSION_MINUTES < 1 || SESSION_MINUTES > 330 )); then
-            echo "ERROR: session_minutes must be between 1 and 330."
+            echo "ERROR: Invalid session duration."
             exit 1
           fi
-
-          # IMPORTANT:
-          # Do not impose an artificial username regex.
-          # Let Linux useradd validate the actual username.
 
           USERNAME="$OPENCODE_BASIC_USER"
+          PASSWORD="$OPENCODE_BASIC_PASS"
 
           if [ -z "$USERNAME" ]; then
-            echo "ERROR: OPENCODE_BASIC_USER is empty."
+            echo "ERROR: Username secret is empty."
             exit 1
           fi
 
-          if [ -z "$OPENCODE_BASIC_PASS" ]; then
-            echo "ERROR: OPENCODE_BASIC_PASS is empty."
+          if [ -z "$PASSWORD" ]; then
+            echo "ERROR: Password secret is empty."
             exit 1
           fi
-
-          echo "Updating package lists..."
 
           sudo apt-get update -qq
 
-          echo "Installing XFCE, XRDP, Xorg and D-Bus..."
-
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+          sudo apt-get install -y -qq \
             xfce4 \
             xfce4-goodies \
             xfce4-session \
             xfconf \
+            xfce4-settings \
             xfce4-panel \
             xfdesktop4 \
             xfwm4 \
@@ -102,20 +101,39 @@ jobs:
             tar \
             gzip
 
-          echo "Checking required binaries..."
+          echo "Package installation completed."
+
+          # --------------------------------------------------------
+          # Verify essential binaries
+          # --------------------------------------------------------
 
           for BIN in \
             startxfce4 \
             xfce4-session \
+            xfconfd \
+            xfconf-query \
             dbus-run-session \
-            Xorg; do
+            Xorg \
+            xfwm4 \
+            xfce4-panel \
+            xfdesktop \
+            Thunar; do
 
             if ! command -v "$BIN" >/dev/null 2>&1; then
-              echo "ERROR: Missing binary: $BIN"
+              echo "ERROR: Missing executable: $BIN"
               exit 1
             fi
 
           done
+
+          # --------------------------------------------------------
+          # Verify system configuration directory
+          # --------------------------------------------------------
+
+          if [ ! -d /etc/xdg ]; then
+            echo "ERROR: /etc/xdg is missing."
+            exit 1
+          fi
 
           # --------------------------------------------------------
           # Create RDP user
@@ -127,104 +145,332 @@ jobs:
             sudo userdel -r "$USERNAME" || true
           fi
 
+          # Linux validates username according to its own rules.
           sudo useradd -m -s /bin/bash "$USERNAME"
 
-          printf '%s:%s\n' \
-            "$USERNAME" "$OPENCODE_BASIC_PASS" | sudo chpasswd
+          printf '%s:%s\n' "$USERNAME" "$PASSWORD" |
+            sudo chpasswd
 
           sudo usermod -aG sudo "$USERNAME"
 
-          # Use a fixed sudoers filename.
+          # Use numeric UID in sudoers to avoid username parsing issues.
+          USER_UID=$(id -u "$USERNAME")
+
           sudo rm -f /etc/sudoers.d/90-rdp-user
 
-          echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" |
+          printf '#%s ALL=(ALL) NOPASSWD:ALL\n' "$USER_UID" |
             sudo tee /etc/sudoers.d/90-rdp-user >/dev/null
 
           sudo chmod 0440 /etc/sudoers.d/90-rdp-user
 
           sudo visudo -cf /etc/sudoers.d/90-rdp-user
 
-          # --------------------------------------------------------
-          # Home directory permissions
-          # --------------------------------------------------------
+          USER_HOME="/home/$USERNAME"
 
-          sudo chown -R "$USERNAME:$USERNAME" "/home/$USERNAME"
-
-          sudo chmod 755 "/home/$USERNAME"
+          # --------------------------------------------------------
+          # Clean user directories
+          # --------------------------------------------------------
 
           sudo mkdir -p \
-            "/home/$USERNAME/.config" \
-            "/home/$USERNAME/.cache" \
-            "/home/$USERNAME/.local/share"
+            "$USER_HOME/.config" \
+            "$USER_HOME/.cache" \
+            "$USER_HOME/.local/share"
 
-          sudo chown -R "$USERNAME:$USERNAME" \
-            "/home/$USERNAME/.config" \
-            "/home/$USERNAME/.cache" \
-            "/home/$USERNAME/.local"
+          sudo rm -rf "$USER_HOME/.cache/sessions"
+
+          sudo chown -R "$USERNAME:$USERNAME" "$USER_HOME"
+
+          sudo chmod 755 "$USER_HOME"
+
+          echo "RDP user created successfully."
+
+      # ============================================================
+      # 3. REPAIR AND VERIFY XFCE SYSTEM CONFIGURATION
+      # ============================================================
+
+      - name: Repair and verify XFCE configuration
+        shell: bash
+        env:
+          OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
+
+        run: |
+          set -Eeuo pipefail
+
+          USERNAME="$OPENCODE_BASIC_USER"
+          USER_HOME="/home/$USERNAME"
+
+          SYSTEM_XML="/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml"
+
+          echo "Checking official XFCE session configuration..."
 
           # --------------------------------------------------------
-          # XFCE SESSION FIX
+          # Reinstall official package if configuration is missing
           # --------------------------------------------------------
 
-          echo "Configuring XFCE session..."
+          if [ ! -s "$SYSTEM_XML" ]; then
 
-          sudo tee "/home/$USERNAME/.xsession" >/dev/null <<'EOF'
+            echo "System XFCE session configuration missing."
+            echo "Reinstalling xfce4-session..."
+
+            sudo apt-get install -y --reinstall xfce4-session
+
+          fi
+
+          if [ ! -s "$SYSTEM_XML" ]; then
+            echo "ERROR: Official XFCE session XML is missing."
+            exit 1
+          fi
+
+          # --------------------------------------------------------
+          # Validate official XML structure
+          # --------------------------------------------------------
+
+          python3 - "$SYSTEM_XML" <<'PY'
+          import sys
+          import xml.etree.ElementTree as ET
+
+          path = sys.argv[1]
+
+          try:
+              root = ET.parse(path).getroot()
+          except Exception as exc:
+              print("ERROR: Invalid XFCE XML:", exc)
+              sys.exit(1)
+
+          if root.tag != "channel":
+              print("ERROR: Invalid XFCE channel.")
+              sys.exit(1)
+
+          if root.get("name") != "xfce4-session":
+              print("ERROR: Incorrect channel name.")
+              sys.exit(1)
+
+          def prop(parent, name):
+              if parent is None:
+                  return None
+
+              for item in parent.findall("property"):
+                  if item.get("name") == name:
+                      return item
+
+              return None
+
+          general = prop(root, "general")
+          failsafe_name = prop(general, "FailsafeSessionName")
+
+          if failsafe_name is None:
+              print("ERROR: FailsafeSessionName is missing.")
+              sys.exit(1)
+
+          if failsafe_name.get("value") != "Failsafe":
+              print("ERROR: Unexpected failsafe session name.")
+              sys.exit(1)
+
+          sessions = prop(root, "sessions")
+          failsafe = prop(sessions, "Failsafe")
+
+          if failsafe is None:
+              print("ERROR: Failsafe session definition missing.")
+              sys.exit(1)
+
+          is_failsafe = prop(failsafe, "IsFailsafe")
+          count = prop(failsafe, "Count")
+
+          if is_failsafe is None or is_failsafe.get("value") != "true":
+              print("ERROR: Failsafe session is not enabled.")
+              sys.exit(1)
+
+          if count is None or int(count.get("value", "0")) <= 0:
+              print("ERROR: Failsafe session has no applications.")
+              sys.exit(1)
+
+          print("Official XFCE XML validated.")
+          print("Failsafe session:", failsafe_name.get("value"))
+          print("Application count:", count.get("value"))
+          PY
+
+          # --------------------------------------------------------
+          # Set correct XDG environment
+          # --------------------------------------------------------
+
+          echo "Configuring XDG directories..."
+
+          # IMPORTANT:
+          # XFCE error explicitly requires /etc.
+          # Keep both standard XDG path and /etc.
+
+          XDG_DIRS="/etc/xdg:/etc"
+
+          # --------------------------------------------------------
+          # Remove potentially corrupted user session overrides
+          # --------------------------------------------------------
+
+          sudo rm -rf "$USER_HOME/.cache/sessions"
+
+          sudo rm -f \
+            "$USER_HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml"
+
+          # --------------------------------------------------------
+          # Configure .xsession
+          # --------------------------------------------------------
+
+          sudo tee "$USER_HOME/.xsession" >/dev/null <<'EOF'
           #!/bin/sh
 
-          unset DBUS_SESSION_BUS_ADDRESS
+          # Remove inherited session variables.
           unset SESSION_MANAGER
+          unset DBUS_SESSION_BUS_ADDRESS
+          unset DBUS_STARTER_ADDRESS
+          unset DBUS_STARTER_BUS_TYPE
+          unset WAYLAND_DISPLAY
 
-          export XDG_CONFIG_DIRS="/etc/xdg"
-          export XDG_DATA_DIRS="/usr/local/share:/usr/share"
+          # Correct XFCE configuration paths.
+          export XDG_CONFIG_DIRS="/etc/xdg:/etc"
 
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_CACHE_HOME="$HOME/.cache"
+          export XDG_DATA_HOME="$HOME/.local/share"
+
+          export XDG_SESSION_TYPE="x11"
+
+          export GDK_BACKEND="x11"
+
+          # Start a fresh D-Bus session and XFCE.
           exec dbus-run-session -- startxfce4
           EOF
 
-          sudo chmod 755 "/home/$USERNAME/.xsession"
+          sudo chmod 755 "$USER_HOME/.xsession"
 
-          sudo chown "$USERNAME:$USERNAME" \
-            "/home/$USERNAME/.xsession"
-
-          # --------------------------------------------------------
-          # Validate XFCE configuration
-          # --------------------------------------------------------
-
-          if [ ! -d /etc/xdg ]; then
-            echo "ERROR: /etc/xdg does not exist."
-            exit 1
-          fi
-
-          if [ ! -d /etc/xdg/xfce4 ]; then
-            echo "ERROR: XFCE configuration directory missing."
-            exit 1
-          fi
-
-          echo "XFCE configuration validated."
+          sudo chown "$USERNAME:$USERNAME" "$USER_HOME/.xsession"
 
           # --------------------------------------------------------
-          # XRDP configuration
+          # Verify ownership
           # --------------------------------------------------------
+
+          sudo chown -R "$USERNAME:$USERNAME" \
+            "$USER_HOME/.config" \
+            "$USER_HOME/.cache" \
+            "$USER_HOME/.local"
+
+          echo "XFCE startup script created."
+
+          # --------------------------------------------------------
+          # Test D-Bus and xfconf as the actual RDP user
+          # --------------------------------------------------------
+
+          echo "=========================================="
+          echo "Testing XFCE D-Bus configuration"
+          echo "=========================================="
+
+          sudo -u "$USERNAME" \
+            env \
+              HOME="$USER_HOME" \
+              XDG_CONFIG_DIRS="$XDG_DIRS" \
+              XDG_CONFIG_HOME="$USER_HOME/.config" \
+            dbus-run-session -- bash -Eeuo pipefail -c '
+
+              echo "D-Bus address:"
+              test -n "$DBUS_SESSION_BUS_ADDRESS"
+
+              echo "Reading XFCE failsafe name..."
+
+              FAILSAFE_NAME=$(
+                xfconf-query \
+                  -c xfce4-session \
+                  -p /general/FailsafeSessionName
+              )
+
+              echo "Failsafe name: $FAILSAFE_NAME"
+
+              if [ "$FAILSAFE_NAME" != "Failsafe" ]; then
+                echo "ERROR: Invalid failsafe name."
+                exit 1
+              fi
+
+              echo "Checking failsafe flag..."
+
+              FAILSAFE_FLAG=$(
+                xfconf-query \
+                  -c xfce4-session \
+                  -p "/sessions/$FAILSAFE_NAME/IsFailsafe"
+              )
+
+              echo "Failsafe flag: $FAILSAFE_FLAG"
+
+              if [[ "$FAILSAFE_FLAG" != "true" &&
+                    "$FAILSAFE_FLAG" != "1" ]]; then
+                echo "ERROR: Failsafe flag is invalid."
+                exit 1
+              fi
+
+              echo "Checking application count..."
+
+              APP_COUNT=$(
+                xfconf-query \
+                  -c xfce4-session \
+                  -p "/sessions/$FAILSAFE_NAME/Count"
+              )
+
+              echo "Application count: $APP_COUNT"
+
+              if ! [[ "$APP_COUNT" =~ ^[0-9]+$ ]] ||
+                 (( APP_COUNT < 1 )); then
+                echo "ERROR: Invalid application count."
+                exit 1
+              fi
+
+              echo "Checking failsafe application commands..."
+
+              for i in $(seq 0 $((APP_COUNT - 1))); do
+
+                PROPERTY="/sessions/$FAILSAFE_NAME/Client${i}_Command"
+
+                if ! xfconf-query \
+                  -c xfce4-session \
+                  -p "$PROPERTY" >/dev/null 2>&1; then
+
+                  echo "ERROR: Missing $PROPERTY"
+                  exit 1
+                fi
+
+              done
+
+              echo "All XFCE configuration checks passed."
+
+            '
+
+          echo "=========================================="
+          echo "XFCE + D-Bus verification PASSED"
+          echo "=========================================="
+
+      # ============================================================
+      # 4. CONFIGURE AND START XRDP
+      # ============================================================
+
+      - name: Configure and start XRDP
+        shell: bash
+
+        run: |
+          set -Eeuo pipefail
+
+          echo "Configuring XRDP..."
 
           sudo adduser xrdp ssl-cert || true
 
-          # Remove misplaced allowed_users entries.
-          sudo sed -i \
-            '/^[[:space:]]*allowed_users[[:space:]]*=/d' \
-            /etc/xrdp/sesman.ini
-
           if ! dpkg -s xorgxrdp >/dev/null 2>&1; then
-            echo "ERROR: xorgxrdp is not installed."
+            echo "ERROR: xorgxrdp missing."
             exit 1
           fi
 
           test -f /etc/xrdp/xrdp.ini
           test -f /etc/xrdp/sesman.ini
+          test -f /etc/xrdp/startwm.sh
 
-          # --------------------------------------------------------
-          # Start XRDP services
-          # --------------------------------------------------------
-
-          echo "Starting XRDP..."
+          # Check that Xorg backend exists.
+          if ! dpkg -L xorgxrdp | grep -q 'xrdp.*\.so'; then
+            echo "ERROR: XRDP Xorg modules missing."
+            exit 1
+          fi
 
           sudo systemctl enable xrdp
           sudo systemctl enable xrdp-sesman
@@ -242,7 +488,7 @@ jobs:
 
               sudo journalctl \
                 -u "$SERVICE" \
-                -n 80 \
+                -n 100 \
                 --no-pager || true
 
               exit 1
@@ -251,21 +497,17 @@ jobs:
           done
 
           if ! sudo ss -lnt | grep -q ':3389'; then
-            echo "ERROR: XRDP is not listening on port 3389."
+            echo "ERROR: XRDP is not listening on 3389."
             exit 1
           fi
 
-          echo "=========================================="
-          echo "XFCE + XRDP successfully installed."
-          echo "Username: $USERNAME"
-          echo "RDP Port: 3389"
-          echo "=========================================="
+          echo "XRDP is ready."
 
       # ============================================================
-      # 3. INSTALL BORE
+      # 5. INSTALL BORE
       # ============================================================
 
-      - name: Install bore and create runner
+      - name: Install Bore and create runner
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -300,10 +542,10 @@ jobs:
                   break
           ' <<< "$API")
 
-          echo "Latest Bore version: $TAG"
+          echo "Bore version: $TAG"
 
           if [ -z "$ASSET_URL" ]; then
-            echo "ERROR: No suitable Linux x86_64 asset found."
+            echo "ERROR: Bore Linux asset not found."
             exit 1
           fi
 
@@ -323,7 +565,6 @@ jobs:
 
             if [ -z "$FOUND" ]; then
               echo "ERROR: Bore binary not found."
-              find . -maxdepth 3 -type f
               exit 1
             fi
 
@@ -332,7 +573,6 @@ jobs:
 
           chmod +x ./bore
 
-          echo "Bore version:"
           ./bore --version || true
 
           # --------------------------------------------------------
@@ -377,7 +617,7 @@ jobs:
               for i in $(seq 1 30); do
 
                   if ! kill -0 "$BORE_PID" 2>/dev/null; then
-                      echo "ERROR: Bore process exited."
+                      echo "ERROR: Bore exited."
                       cat "$OUT_LOG" || true
                       return 1
                   fi
@@ -429,13 +669,11 @@ jobs:
               return 1
           }
 
-          # Initial startup
           if ! start_bore; then
               echo "Initial Bore startup failed."
               exit 1
           fi
 
-          # Monitor and restart Bore
           while true; do
 
               sleep 15
@@ -464,7 +702,7 @@ jobs:
           echo "Bore runner created."
 
       # ============================================================
-      # 4. START BORE
+      # 6. START BORE
       # ============================================================
 
       - name: Start Bore tunnel
@@ -474,14 +712,14 @@ jobs:
           set -Eeuo pipefail
 
           rm -f connection.txt connection.txt.tmp
-          rm -f bore.pid bore_out.log
+          rm -f bore.pid bore_out.log bore_runner.log
 
           nohup ./bore_runner.sh \
             > bore_runner.log 2>&1 &
 
           echo $! > bore_runner.pid
 
-          echo "Waiting for Bore tunnel..."
+          echo "Waiting for tunnel..."
 
           READY=0
 
@@ -505,7 +743,7 @@ jobs:
             RUNNER_PID=$(cat bore_runner.pid)
 
             if ! kill -0 "$RUNNER_PID" 2>/dev/null; then
-              echo "ERROR: Bore runner exited."
+              echo "ERROR: Bore runner stopped."
               cat bore_runner.log || true
               exit 1
             fi
@@ -516,7 +754,7 @@ jobs:
 
           if [ "$READY" -ne 1 ]; then
 
-            echo "ERROR: Tunnel startup failed."
+            echo "ERROR: Bore tunnel unavailable."
 
             cat bore_runner.log || true
             cat bore_out.log || true
@@ -524,58 +762,81 @@ jobs:
             exit 1
           fi
 
-          echo "Bore tunnel is ready."
-
+          echo "Tunnel ready:"
           cat connection.txt
 
       # ============================================================
-      # 5. VERIFY DESKTOP
+      # 7. FINAL XFCE VERIFICATION
       # ============================================================
 
-      - name: Verify desktop environment
+      - name: Final XFCE and XRDP verification
         shell: bash
+        env:
+          OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
 
         run: |
           set -Eeuo pipefail
 
-          echo "Checking desktop environment..."
+          USERNAME="$OPENCODE_BASIC_USER"
 
-          echo "Checking D-Bus..."
+          echo "Final desktop verification..."
 
-          if ! dbus-run-session -- \
-            sh -c 'test -n "$DBUS_SESSION_BUS_ADDRESS"'; then
+          # --------------------------------------------------------
+          # Check user session file
+          # --------------------------------------------------------
 
-            echo "ERROR: D-Bus initialization failed."
-            exit 1
-          fi
+          test -x "/home/$USERNAME/.xsession"
 
-          echo "D-Bus initialization: OK"
+          grep -q 'XDG_CONFIG_DIRS="/etc/xdg:/etc"' \
+            "/home/$USERNAME/.xsession"
 
-          echo "Checking XFCE..."
+          grep -q 'dbus-run-session -- startxfce4' \
+            "/home/$USERNAME/.xsession"
 
-          test -d /etc/xdg
-          test -d /etc/xdg/xfce4
-          test -x /usr/bin/startxfce4
-          test -x /usr/bin/xfce4-session
+          # --------------------------------------------------------
+          # Test XFCE configuration again
+          # --------------------------------------------------------
 
-          echo "XFCE installation: OK"
+          sudo -u "$USERNAME" \
+            env \
+              HOME="/home/$USERNAME" \
+              XDG_CONFIG_DIRS="/etc/xdg:/etc" \
+            dbus-run-session -- bash -e -c '
 
-          echo "Checking XRDP..."
+              NAME=$(xfconf-query \
+                -c xfce4-session \
+                -p /general/FailsafeSessionName)
 
-          sudo systemctl is-active xrdp
-          sudo systemctl is-active xrdp-sesman
+              test "$NAME" = "Failsafe"
 
-          sudo ss -lntp | grep ':3389'
+              FLAG=$(xfconf-query \
+                -c xfce4-session \
+                -p "/sessions/$NAME/IsFailsafe")
 
-          echo "Desktop verification completed."
+              [[ "$FLAG" == "true" || "$FLAG" == "1" ]]
+
+              echo "XFCE Failsafe configuration: OK"
+            '
+
+          # --------------------------------------------------------
+          # Check XRDP
+          # --------------------------------------------------------
+
+          sudo systemctl is-active --quiet xrdp
+          sudo systemctl is-active --quiet xrdp-sesman
+
+          sudo ss -lnt | grep ':3389'
+
+          echo "=========================================="
+          echo "ALL DESKTOP CHECKS PASSED"
+          echo "=========================================="
 
       # ============================================================
-      # 6. UPDATE README
+      # 8. UPDATE README
       # ============================================================
 
       - name: Update README.md
         shell: bash
-
         env:
           OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
           SESSION_MINUTES: ${{ github.event.inputs.session_minutes }}
@@ -583,10 +844,7 @@ jobs:
         run: |
           set -Eeuo pipefail
 
-          if [ ! -f connection.txt ]; then
-            echo "ERROR: connection.txt missing."
-            exit 1
-          fi
+          test -f connection.txt
 
           HOST=$(grep '^host=' connection.txt | cut -d= -f2)
           PORT=$(grep '^port=' connection.txt | cut -d= -f2)
@@ -598,6 +856,7 @@ jobs:
             '+%Y-%m-%d %H:%M:%S UTC')
 
           TMP_SECTION=$(mktemp)
+          TMP_README=$(mktemp)
 
           cat > "$TMP_SECTION" <<EOF
           ## Ubuntu RDP Access
@@ -615,8 +874,6 @@ jobs:
           if [ ! -f README.md ]; then
             touch README.md
           fi
-
-          TMP_README=$(mktemp)
 
           if grep -q '^## Ubuntu RDP Access' README.md; then
 
@@ -642,7 +899,7 @@ jobs:
           echo "README updated."
 
       # ============================================================
-      # 7. COMMIT README
+      # 9. COMMIT README
       # ============================================================
 
       - name: Commit and push README
@@ -666,12 +923,11 @@ jobs:
           fi
 
       # ============================================================
-      # 8. DISPLAY CONNECTION
+      # 10. DISPLAY CONNECTION
       # ============================================================
 
       - name: Display connection info
         shell: bash
-
         env:
           OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
 
@@ -691,21 +947,18 @@ jobs:
           echo "Username: $OPENCODE_BASIC_USER"
           echo "Password: GitHub Secret OPENCODE_BASIC_PASS"
           echo ""
-          echo "--------------------------------------------------"
-          echo "Microsoft Remote Desktop configuration:"
-          echo ""
-          echo "PC Name:  $HOST:$PORT"
+          echo "Microsoft Remote Desktop:"
+          echo "PC Name: $HOST:$PORT"
           echo "Username: $OPENCODE_BASIC_USER"
           echo ""
           echo "=================================================="
 
       # ============================================================
-      # 9. KEEP SESSION ALIVE
+      # 11. KEEP SESSION ALIVE
       # ============================================================
 
       - name: Keep session alive
         shell: bash
-
         env:
           SESSION_MINUTES: ${{ github.event.inputs.session_minutes }}
 
@@ -735,17 +988,26 @@ jobs:
               "$SECONDS" \
               "$(date -u +%H:%M:%S)"
 
-            # Keep XRDP alive.
+            # Keep XRDP active.
             if ! sudo systemctl is-active --quiet xrdp; then
+
               echo "WARNING: XRDP stopped. Restarting..."
+
               sudo systemctl restart xrdp
+
             fi
 
-            # Keep Bore runner alive.
+            # Keep Bore runner active.
+            if [ ! -f bore_runner.pid ]; then
+              echo "ERROR: Bore PID file missing."
+              exit 1
+            fi
+
             RUNNER_PID=$(cat bore_runner.pid)
 
             if ! kill -0 "$RUNNER_PID" 2>/dev/null; then
               echo "ERROR: Bore runner stopped."
+              cat bore_runner.log || true
               exit 1
             fi
 
@@ -756,7 +1018,7 @@ jobs:
           echo "Session duration completed."
 
       # ============================================================
-      # 10. CLEANUP
+      # 12. CLEANUP
       # ============================================================
 
       - name: Cleanup
@@ -767,19 +1029,23 @@ jobs:
           echo "Cleaning up..."
 
           if [ -f bore.pid ]; then
+
             BORE_PID=$(cat bore.pid)
 
             if [[ "$BORE_PID" =~ ^[0-9]+$ ]]; then
               kill "$BORE_PID" 2>/dev/null || true
             fi
+
           fi
 
           if [ -f bore_runner.pid ]; then
+
             RUNNER_PID=$(cat bore_runner.pid)
 
             if [[ "$RUNNER_PID" =~ ^[0-9]+$ ]]; then
               kill "$RUNNER_PID" 2>/dev/null || true
             fi
+
           fi
 
           sudo systemctl stop xrdp 2>/dev/null || true
