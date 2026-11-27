@@ -72,7 +72,7 @@ jobs:
           sudo ss -tlnp | grep 3389 || true
 
       # ------------------------------------------------------------------
-      # 2) دانلود bore از GitHub API + ساخت اسکریپت رانر
+      # 2) دانلود bore از GitHub API + ساخت اسکریپت رانر (نسخه اصلاح‌شده)
       # ------------------------------------------------------------------
       - name: Install bore and create runner script
         shell: bash
@@ -98,15 +98,24 @@ jobs:
             exit 1
           fi
 
+          # پاکسازی هر bore قدیمی برای جلوگیری از خطای mv روی خودش
+          rm -f bore bore.tar.gz
+
           curl -fsSL "$ASSET_URL" -o bore.tar.gz
           tar -xzf bore.tar.gz
-          FOUND=$(find . -maxdepth 2 -type f -name 'bore*' -executable ! -name '*.tar.gz' | head -n1)
-          if [ -z "$FOUND" ]; then
-            echo "ERROR: bore binary not found after extraction"
-            ls -la
-            exit 1
+
+          if [ -x ./bore ]; then
+            echo "Found ./bore after extraction"
+          else
+            FOUND=$(find . -maxdepth 2 -type f -name 'bore*' -executable ! -name '*.tar.gz' | head -n1 || true)
+            if [ -z "$FOUND" ]; then
+              echo "ERROR: bore binary not found after extraction"
+              ls -la
+              exit 1
+            fi
+            mv "$FOUND" ./bore
           fi
-          mv "$FOUND" ./bore
+
           chmod +x ./bore
           echo "Bore version:"
           ./bore --version || true
