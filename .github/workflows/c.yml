@@ -22,20 +22,11 @@ jobs:
             xfce4 xfce4-goodies xrdp dbus-x11 xterm \
             curl wget unzip ca-certificates gnupg lsb-release
 
-          # .xsession برای کاربر runner
           echo "xfce4-session" > /home/runner/.xsession
           chown runner:runner /home/runner/.xsession
 
-          # پسورد ساده کاربر runner
           echo "runner:Passw0rd!123" | sudo chpasswd
-
-          # xrdp باید در گروه ssl-cert باشد (برای TLS داخلی)
           sudo adduser xrdp ssl-cert || true
-
-          # پورت xrdp
-          sudo sed -i 's/^port=3389/port=3389/' /etc/xrdp/xrdp.ini
-
-          # اجازه همه کاربران
           echo "allowed_users=anybody" | sudo tee -a /etc/xrdp/sesman.ini
 
           sudo systemctl enable xrdp
@@ -55,14 +46,16 @@ jobs:
           sudo docker version
 
       # ------------------------------------------------------------------
-      # 3) Guacamole stack (guacd + postgres + guacamole)
+      # 3) Guacamole stack  ← اینجا اصلاح اصلی است
       # ------------------------------------------------------------------
       - name: Setup Guacamole stack
         run: |
           mkdir -p ~/guac/initdb
           cd ~/guac
 
-          # ساخت اسکیمای DB قبل از بالا آمدن postgres
+          # پاکسازی احتمالی volume های قدیمی
+          sudo docker compose down -v 2>/dev/null || true
+
           echo "Generating init.sql..."
           sudo docker run --rm guacamole/guacamole:latest \
             /opt/guacamole/bin/initdb.sh --postgresql > initdb/init.sql
@@ -99,10 +92,10 @@ jobs:
                 - "8080:8080"
               environment:
                 GUACD_HOSTNAME: guacd
-                POSTGRES_HOSTNAME: postgres
-                POSTGRES_DATABASE: guacamole_db
-                POSTGRES_USER: guacamole_user
-                POSTGRES_PASSWORD: guacamole_pass
+                POSTGRESQL_HOSTNAME: postgres
+                POSTGRESQL_DATABASE: guacamole_db
+                POSTGRESQL_USER: guacamole_user
+                POSTGRESQL_PASSWORD: guacamole_pass
               depends_on:
                 - guacd
                 - postgres
@@ -112,7 +105,7 @@ jobs:
           sudo docker ps -a
 
       # ------------------------------------------------------------------
-      # 4) انتظار برای readiness کامل Guacamole
+      # 4) انتظار readiness
       # ------------------------------------------------------------------
       - name: Wait for Guacamole readiness
         run: |
@@ -131,36 +124,44 @@ jobs:
           if [ "$ok" != "1" ]; then
             echo "::error::Guacamole did not become ready"
             sudo docker ps -a
-            echo "=== guacamole logs ==="
             sudo docker logs $(sudo docker ps -aqf "name=guacamole") 2>&1 | tail -80 || true
-            echo "=== postgres logs ==="
             sudo docker logs $(sudo docker ps -aqf "name=postgres") 2>&1 | tail -80 || true
             exit 1
           fi
 
       # ------------------------------------------------------------------
-      # 5) گرفتن توکن + ساخت connection (با retry)
+      # 5) گرفتن توکن + ساخت connection
       # ------------------------------------------------------------------
       - name: Configure RDP connection in Guacamole
         run: |
           BASE="http://localhost:8080/guacamole"
           TOKEN=""
 
-          for attempt in $(seq 1 15); do
+          # ۵ بار با فاصله ۱۵ ثانیه (rate-limit = 5 در ۵ دقیقه → بعد از ۵ بار restart)
+          for attempt in $(seq 1 5); do
             RESP=$(curl -s -X POST "$BASE/api/tokens" \
               --data-urlencode "username=guacadmin" \
               --data-urlencode "password=guacadmin" || true)
             echo "attempt $attempt: $RESP" | head -c 300; echo
+
             TOKEN=$(echo "$RESP" | python3 -c "
           import sys, json
           try:
-              d = json.load(sys.stdin)
-              print(d.get('authToken', ''))
+              print(json.load(sys.stdin).get('authToken',''))
           except Exception:
               print('')
           " 2>/dev/null)
+
             [ -n "$TOKEN" ] && break
-            sleep 5
+
+            # اگر بلاک شدیم، کانتینر را ریستارت کن تا tracker پاک شود
+            if echo "$RESP" | grep -q "Too many failed"; then
+              echo "Rate limited; restarting guacamole container..."
+              sudo docker restart $(sudo docker ps -aqf "name=guacamole") || true
+              sleep 10
+            else
+              sleep 15
+            fi
           done
 
           if [ -z "$TOKEN" ]; then
@@ -229,7 +230,6 @@ jobs:
 
           echo "TUNNEL_URL=$URL" >> $GITHUB_ENV
           echo "::notice title=Guacamole URL::$URL/guacamole"
-          echo "----- tunnel log -----"
           cat ~/tunnel.log
 
       # ------------------------------------------------------------------
@@ -251,7 +251,6 @@ jobs:
           echo "    pass: Passw0rd!123"
           echo "==================================================="
 
-          # نگه‌داشتن job + restart تونل در صورت مرگ
           while true; do
             sleep 300
             echo "[$(date)] tunnel: $TUNNEL_URL"
