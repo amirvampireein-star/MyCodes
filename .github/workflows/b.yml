@@ -15,7 +15,7 @@ jobs:
   test:
     name: Qwen API Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
 
     env:
       PORT: "3265"
@@ -27,141 +27,234 @@ jobs:
         working-directory: qwen-api
 
     steps:
+      # --------------------------------------------------
+      # 1. Checkout QwenFreeApi
+      # --------------------------------------------------
+
       - name: Checkout QwenFreeApi
         uses: actions/checkout@v4
         with:
           repository: angyedz/QwenFreeApi
+          ref: master
           path: qwen-api
           fetch-depth: 1
+
+      # --------------------------------------------------
+      # 2. Setup Node.js
+      # --------------------------------------------------
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Install Chromium with Playwright
+      # --------------------------------------------------
+      # 3. Verify project structure
+      # --------------------------------------------------
+
+      - name: Verify project structure
         shell: bash
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
 
-          echo "Installing Playwright..."
+          REQUIRED_FILES=(
+            "package.json"
+            "server.js"
+            "src/config.js"
+            "src/account-store.js"
+            "src/qwen-client.js"
+            "src/chat-adapter.js"
+            "scripts/login.js"
+            "scripts/test-cookies.js"
+            "scripts/offline-sse-test.js"
+          )
 
-          npm install --no-save --no-audit --no-fund playwright
-
-          echo "Installing Chromium and system dependencies..."
-
-          npx playwright install --with-deps chromium
-
-          echo "Chromium installation completed."
-
-      - name: Verify Chromium
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          node <<'NODE'
-          const { chromium } = require('playwright');
-
-          async function main() {
-            const browser = await chromium.launch({
-              headless: true
-            });
-
-            const page = await browser.newPage();
-
-            await page.goto('about:blank');
-
-            console.log('Chromium launched successfully.');
-            console.log('Browser version:', browser.version());
-
-            await browser.close();
-          }
-
-          main().catch(error => {
-            console.error('Chromium verification failed:', error.message);
-            process.exitCode = 1;
-          });
-          NODE
-
-      - name: Check project files
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          for file in package.json server.js src/account-store.js; do
-            if [ ! -f "$file" ]; then
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [[ ! -f "$file" ]]; then
               echo "::error::Missing required file: $file"
               exit 1
             fi
+
+            echo "[OK] $file"
           done
 
-          echo "QwenFreeApi project found."
+          echo "Project structure verified."
+
+      # --------------------------------------------------
+      # 4. Install dependencies
+      # --------------------------------------------------
 
       - name: Install project dependencies
-        run: npm install --no-audit --no-fund
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          npm install --no-audit --no-fund
+
+          echo "Dependencies installed."
+          echo "Node: $(node --version)"
+          echo "NPM: $(npm --version)"
+
+      # --------------------------------------------------
+      # 5. JavaScript syntax validation
+      # --------------------------------------------------
 
       - name: Validate JavaScript syntax
         shell: bash
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
 
           node --check server.js
+          node --check src/config.js
+          node --check src/account-store.js
 
-          for dir in src scripts public; do
-            if [ -d "$dir" ]; then
-              while IFS= read -r -d '' file; do
-                echo "Checking: $file"
-                node --check "$file"
-              done < <(find "$dir" -type f -name '*.js' -print0)
-            fi
-          done
+          while IFS= read -r -d '' file; do
+            echo "Checking: $file"
+            node --check "$file"
+          done < <(
+            find src scripts \
+              -type f \
+              -name '*.js' \
+              -print0
+          )
 
           echo "JavaScript syntax validation passed."
 
+      # --------------------------------------------------
+      # 6. Offline tests
+      # --------------------------------------------------
+
       - name: Run offline tests
-        run: npm test
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          npm test
+
+          echo "Offline tests passed."
+
+      # --------------------------------------------------
+      # 7. Restore Qwen account from GitHub Secret
+      # --------------------------------------------------
 
       - name: Configure Qwen account
         shell: bash
         env:
-          JWT: ${{ secrets.JWT }}
+          QWEN: ${{ secrets.QWEN }}
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
 
-          if [ -z "${JWT:-}" ]; then
-            echo "::error::GitHub secret JWT is missing."
+          if [[ -z "${QWEN:-}" ]]; then
+            echo "::error::Repository secret QWEN is missing."
             exit 1
           fi
 
           node <<'NODE'
+          'use strict';
+
           const accountStore = require('./src/account-store');
 
-          const token = process.env.JWT;
-
-          if (!token || token.trim().length < 20) {
-            console.error('JWT secret is missing or invalid.');
+          function fail(message) {
+            console.error(`[ERROR] ${message}`);
             process.exit(1);
           }
 
-          accountStore.save({
-            token,
-            email: 'github-actions',
-            cookie: [],
-            savedAt: Date.now(),
-            failures: 0,
-            unavailableUntil: 0,
-            lastError: ''
-          }, 'github-actions');
+          let document;
 
-          console.log('Qwen account configured successfully.');
+          try {
+            document = JSON.parse(process.env.QWEN);
+          } catch {
+            fail('QWEN secret does not contain valid JSON.');
+          }
+
+          if (
+            !document ||
+            typeof document !== 'object' ||
+            Array.isArray(document)
+          ) {
+            fail('QWEN secret must contain a JSON object.');
+          }
+
+          // Support both exported JSON and native account JSON.
+          const token =
+            document.QWEN_TOKEN ??
+            document.token;
+
+          let cookies =
+            document.QWEN_COOKIES ??
+            document.cookie;
+
+          const email =
+            document.QWEN_EMAIL ??
+            document.email ??
+            'github-actions';
+
+          if (
+            typeof token !== 'string' ||
+            token.trim().length < 40 ||
+            token.trim().split('.').length !== 3
+          ) {
+            fail('QWEN token is missing or invalid.');
+          }
+
+          // The exported file stores cookies as a JSON string.
+          if (typeof cookies === 'string') {
+            try {
+              cookies = JSON.parse(cookies);
+            } catch {
+              fail('QWEN cookies contain invalid JSON.');
+            }
+          }
+
+          if (!Array.isArray(cookies)) {
+            fail('QWEN cookies must be an array.');
+          }
+
+          for (const cookie of cookies) {
+            if (
+              !cookie ||
+              typeof cookie.name !== 'string' ||
+              typeof cookie.value !== 'string'
+            ) {
+              fail('One or more cookie entries are invalid.');
+            }
+          }
+
+          accountStore.load();
+
+          const saved = accountStore.save(
+            {
+              token: token.trim(),
+              email: String(email),
+              cookie: cookies,
+              savedAt: Date.now(),
+              failures: 0,
+              unavailableUntil: 0,
+              lastError: ''
+            },
+            'github-actions'
+          );
+
+          if (!saved || !saved.token) {
+            fail('Account could not be saved.');
+          }
+
+          console.log('Qwen account restored successfully.');
+          console.log(`Account ID: ${saved.id}`);
+          console.log(`Cookies loaded: ${cookies.length}`);
+          console.log('Sensitive values were not printed.');
           NODE
+
+      # --------------------------------------------------
+      # 8. Start Qwen API server
+      # --------------------------------------------------
 
       - name: Start Qwen API server
         shell: bash
         env:
           QWEN_WORKSPACE: ${{ runner.temp }}/qwen-workspace
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
 
           mkdir -p "$QWEN_WORKSPACE"
 
@@ -170,120 +263,171 @@ jobs:
 
           touch "$LOG_FILE"
 
-          node server.js >> "$LOG_FILE" 2>&1 &
+          nohup node server.js > "$LOG_FILE" 2>&1 &
+
           SERVER_PID=$!
 
           echo "$SERVER_PID" > "$PID_FILE"
 
           echo "Qwen API server started."
           echo "PID: $SERVER_PID"
+          echo "Port: $PORT"
+
+      # --------------------------------------------------
+      # 9. Wait for server readiness
+      # --------------------------------------------------
 
       - name: Wait for server
         shell: bash
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
+
+          HEALTH_FILE="$RUNNER_TEMP/qwen-health.json"
+          PID_FILE="$RUNNER_TEMP/qwen-server.pid"
 
           URL="http://127.0.0.1:${PORT}/healthz"
 
           for attempt in $(seq 1 40); do
-            if curl --silent --fail "$URL" > "$RUNNER_TEMP/health.json"; then
-              echo "Server is responding."
-              cat "$RUNNER_TEMP/health.json"
+
+            if curl \
+              --silent \
+              --fail \
+              "$URL" \
+              -o "$HEALTH_FILE"; then
+
+              node - "$HEALTH_FILE" <<'NODE'
+          const fs = require('fs');
+
+          const health = JSON.parse(
+            fs.readFileSync(process.argv[2], 'utf8')
+          );
+
+          if (health.ok !== true) {
+            console.error('Server health check failed.');
+            process.exit(1);
+          }
+
+          if (health.account !== 'loaded') {
+            console.error('Qwen account is not loaded.');
+            process.exit(1);
+          }
+
+          console.log('Server readiness verified.');
+          console.log('Account status: loaded');
+          NODE
+
               exit 0
             fi
 
-            if ! kill -0 "$(cat "$RUNNER_TEMP/qwen-server.pid")" 2>/dev/null; then
+            if [[ -f "$PID_FILE" ]] &&
+               ! kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+
               echo "::error::Qwen server exited unexpectedly."
               exit 1
             fi
 
+            echo "Waiting for server... ($attempt/40)"
             sleep 2
           done
 
           echo "::error::Server startup timed out."
           exit 1
 
-      - name: Test API endpoints
+      # --------------------------------------------------
+      # 10. Test API endpoints
+      # --------------------------------------------------
+
+      - name: Test Qwen API
         shell: bash
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
 
           node <<'NODE'
+          'use strict';
+
           const BASE = `http://127.0.0.1:${process.env.PORT}`;
+
+          const TIMEOUT = 180000;
+
+          function isSecurityChallenge(body) {
+            return /captcha|waf|x5secdata|punish|verification required/i
+              .test(body);
+          }
 
           async function request(path, options = {}) {
             const response = await fetch(`${BASE}${path}`, {
               ...options,
-              signal: AbortSignal.timeout(60000)
+              signal: AbortSignal.timeout(TIMEOUT)
             });
 
             const body = await response.text();
+
+            if (isSecurityChallenge(body)) {
+              throw new Error(
+                'Qwen upstream returned a security challenge. ' +
+                'Manual verification may be required.'
+              );
+            }
+
+            if (!response.ok) {
+              throw new Error(
+                `${path} returned HTTP ${response.status}.`
+              );
+            }
 
             let data;
 
             try {
               data = JSON.parse(body);
             } catch {
-              data = null;
-            }
-
-            if (!response.ok) {
-              const message = body.toLowerCase();
-
-              if (
-                message.includes('captcha') ||
-                message.includes('waf') ||
-                message.includes('x5secdata') ||
-                message.includes('punish')
-              ) {
-                throw new Error(
-                  `${path}: Qwen upstream returned a CAPTCHA/WAF challenge.`
-                );
-              }
-
-              throw new Error(`${path}: HTTP ${response.status}`);
+              throw new Error(
+                `${path} returned an invalid JSON response.`
+              );
             }
 
             return data;
           }
 
           async function main() {
-            console.log('Testing /healthz ...');
+
+            // Health endpoint
+            console.log('[TEST] /healthz');
 
             const healthz = await request('/healthz');
 
-            if (healthz?.ok !== true) {
-              throw new Error('/healthz returned an unhealthy status.');
+            if (
+              healthz.ok !== true ||
+              healthz.account !== 'loaded'
+            ) {
+              throw new Error('Health check failed.');
             }
 
-            if (healthz.account !== 'loaded') {
-              throw new Error('Qwen account was not loaded.');
-            }
+            console.log('[PASS] /healthz');
 
-            console.log('Health check passed.');
-
-            console.log('Testing /health ...');
+            // Detailed health endpoint
+            console.log('[TEST] /health');
 
             const health = await request('/health');
 
             if (
-              health?.ok !== true ||
+              health.ok !== true ||
               health.account !== 'loaded'
             ) {
-              throw new Error('/health check failed.');
+              throw new Error('Detailed health check failed.');
             }
 
-            console.log('Detailed health check passed.');
+            console.log('[PASS] /health');
 
-            console.log('Testing /v1/models ...');
+            // Models endpoint
+            console.log('[TEST] /v1/models');
 
             const models = await request('/v1/models');
 
             if (
-              !Array.isArray(models?.data) ||
+              !Array.isArray(models.data) ||
               models.data.length === 0
             ) {
-              throw new Error('No models returned by the API.');
+              throw new Error('No models were returned.');
             }
 
             const model = models.data.find(
@@ -291,52 +435,67 @@ jobs:
             );
 
             if (!model) {
-              throw new Error('Expected model qwen3.8-max was not found.');
+              throw new Error(
+                'Expected model qwen3.8-max was not found.'
+              );
             }
 
             console.log(
-              `Models endpoint passed (${models.data.length} models).`
+              `[PASS] /v1/models (${models.data.length} models)`
             );
 
-            console.log('Testing /v1/chat/completions ...');
+            // Real upstream chat test
+            console.log('[TEST] /v1/chat/completions');
 
-            const chat = await request('/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer local'
-              },
-              body: JSON.stringify({
-                model: 'qwen3.8-max',
-                messages: [
-                  {
-                    role: 'user',
-                    content: 'Reply with exactly: QWEN_OK'
-                  }
-                ],
-                stream: false,
-                temperature: 0
-              })
-            });
+            const chat = await request(
+              '/v1/chat/completions',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer local'
+                },
+                body: JSON.stringify({
+                  model: 'qwen3.8-max',
+                  messages: [
+                    {
+                      role: 'user',
+                      content: 'Reply with exactly: QWEN_OK'
+                    }
+                  ],
+                  stream: false,
+                  temperature: 0
+                })
+              }
+            );
 
-            const content = chat?.choices?.[0]?.message?.content;
+            const content =
+              chat?.choices?.[0]?.message?.content;
 
             if (
               typeof content !== 'string' ||
               content.trim().length === 0
             ) {
-              throw new Error('Chat API returned an empty response.');
+              throw new Error(
+                'Chat completion returned an empty response.'
+              );
             }
 
-            console.log('Chat completion passed.');
-            console.log('All API tests passed.');
+            console.log('[PASS] /v1/chat/completions');
+            console.log('');
+            console.log('ALL API TESTS PASSED.');
           }
 
           main().catch(error => {
-            console.error(`TEST FAILED: ${error.message}`);
+            // Never print raw upstream response bodies or credentials.
+            console.error(`[TEST FAILED] ${error.message}`);
             process.exitCode = 1;
           });
           NODE
+
+      # --------------------------------------------------
+      # 11. Stop server
+      # --------------------------------------------------
 
       - name: Stop Qwen server
         if: always()
@@ -346,43 +505,87 @@ jobs:
 
           PID_FILE="$RUNNER_TEMP/qwen-server.pid"
 
-          if [ -f "$PID_FILE" ]; then
+          if [[ -f "$PID_FILE" ]]; then
+
             SERVER_PID="$(cat "$PID_FILE")"
 
             if kill -0 "$SERVER_PID" 2>/dev/null; then
-              echo "Stopping Qwen server: $SERVER_PID"
-              kill "$SERVER_PID"
+              echo "Stopping Qwen server..."
+
+              kill -TERM "$SERVER_PID"
+
+              for attempt in $(seq 1 10); do
+                kill -0 "$SERVER_PID" 2>/dev/null || break
+                sleep 1
+              done
+
+              if kill -0 "$SERVER_PID" 2>/dev/null; then
+                kill -KILL "$SERVER_PID"
+              fi
             fi
           fi
 
-          echo "Server shutdown step completed."
+          echo "Server shutdown completed."
 
-      - name: Display complete server logs
+      # --------------------------------------------------
+      # 12. Show sanitized diagnostics
+      # --------------------------------------------------
+
+      - name: Show sanitized server diagnostics
         if: always()
         shell: bash
         run: |
+          set -Eeuo pipefail
+
           LOG_FILE="$RUNNER_TEMP/qwen-server.log"
 
-          echo "=========================================="
-          echo "       COMPLETE QWEN SERVER LOGS"
-          echo "=========================================="
-
-          if [ -f "$LOG_FILE" ]; then
-            cat "$LOG_FILE"
-
-            echo
-            echo "=========================================="
-            echo "Total log lines: $(wc -l < "$LOG_FILE")"
-            echo "=========================================="
-          else
-            echo "Server log file was not created."
+          if [[ ! -f "$LOG_FILE" ]]; then
+            echo "No server log was generated."
+            exit 0
           fi
 
-      - name: Upload server logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: qwen-server-logs
-          path: ${{ runner.temp }}/qwen-server.log
-          if-no-files-found: warn
-          retention-days: 7
+          echo "Showing sanitized server diagnostics:"
+          echo "----------------------------------------"
+
+          python3 - "$LOG_FILE" <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          path = pathlib.Path(sys.argv[1])
+
+          jwt_pattern = re.compile(
+              r'\beyJ[A-Za-z0-9_-]{10,}\.'
+              r'[A-Za-z0-9_-]{10,}\.'
+              r'[A-Za-z0-9_-]{10,}\b'
+          )
+
+          sensitive_pattern = re.compile(
+              r'token|cookie|authorization|x5secdata',
+              re.IGNORECASE
+          )
+
+          lines = path.read_text(
+              encoding='utf-8',
+              errors='replace'
+          ).splitlines()
+
+          for line in lines[-80:]:
+              if sensitive_pattern.search(line):
+                  print('[REDACTED SENSITIVE LOG LINE]')
+                  continue
+
+              line = jwt_pattern.sub('[REDACTED_JWT]', line)
+
+              line = re.sub(
+                  r'([?&](?:token|x5secdata|access_token)=[^&\s]+)',
+                  '[REDACTED_QUERY_PARAMETER]',
+                  line,
+                  flags=re.IGNORECASE
+              )
+
+              print(line)
+
+          print('----------------------------------------')
+          print(f'Total server log lines: {len(lines)}')
+          PY
