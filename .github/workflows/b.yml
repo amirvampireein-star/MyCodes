@@ -15,7 +15,7 @@ jobs:
   test:
     name: Qwen API Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     env:
       PORT: "3265"
@@ -121,12 +121,19 @@ jobs:
 
           mkdir -p "$QWEN_WORKSPACE"
 
-          node server.js > "$RUNNER_TEMP/qwen-server.log" 2>&1 &
+          LOG_FILE="$RUNNER_TEMP/qwen-server.log"
+          PID_FILE="$RUNNER_TEMP/qwen-server.pid"
+
+          touch "$LOG_FILE"
+
+          node server.js >> "$LOG_FILE" 2>&1 &
           SERVER_PID=$!
 
-          echo "$SERVER_PID" > "$RUNNER_TEMP/qwen-server.pid"
+          echo "$SERVER_PID" > "$PID_FILE"
 
           echo "Qwen API server started."
+          echo "PID: $SERVER_PID"
+          echo "Log file: $LOG_FILE"
 
       - name: Wait for server
         shell: bash
@@ -292,21 +299,47 @@ jobs:
         if: always()
         shell: bash
         run: |
-          if [ -f "$RUNNER_TEMP/qwen-server.pid" ]; then
-            SERVER_PID="$(cat "$RUNNER_TEMP/qwen-server.pid")"
-            kill "$SERVER_PID" 2>/dev/null || true
+          set +e
+
+          PID_FILE="$RUNNER_TEMP/qwen-server.pid"
+
+          if [ -f "$PID_FILE" ]; then
+            SERVER_PID="$(cat "$PID_FILE")"
+
+            if kill -0 "$SERVER_PID" 2>/dev/null; then
+              echo "Stopping Qwen server: $SERVER_PID"
+              kill "$SERVER_PID"
+              wait "$SERVER_PID" 2>/dev/null || true
+            fi
           fi
 
-      - name: Server diagnostics
-        if: failure()
+          echo "Server shutdown step completed."
+
+      - name: Display complete server logs
+        if: always()
         shell: bash
         run: |
-          echo "Workflow failed."
+          LOG_FILE="$RUNNER_TEMP/qwen-server.log"
 
-          if [ -f "$RUNNER_TEMP/qwen-server.log" ]; then
-            grep -Ei 'error|fatal|listening|started|failed' \
-              "$RUNNER_TEMP/qwen-server.log" \
-              | sed -E \
-                's/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/[JWT_REDACTED]/g' \
-              | tail -n 30 || true
+          echo "=========================================="
+          echo "       COMPLETE QWEN SERVER LOGS"
+          echo "=========================================="
+
+          if [ -f "$LOG_FILE" ]; then
+            cat "$LOG_FILE"
+            echo
+            echo "=========================================="
+            echo "Total log lines: $(wc -l < "$LOG_FILE")"
+            echo "=========================================="
+          else
+            echo "Server log file was not created."
           fi
+
+      - name: Save server logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qwen-server-logs
+          path: ${{ runner.temp }}/qwen-server.log
+          if-no-files-found: warn
+          retention-days: 7
