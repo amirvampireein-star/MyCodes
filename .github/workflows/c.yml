@@ -152,6 +152,7 @@ jobs:
       # 3. PREPARE CLEAN USER ENVIRONMENT
       # ============================================================
 
+      
       - name: Prepare XFCE user environment
         shell: bash
         env:
@@ -160,63 +161,81 @@ jobs:
         run: |
           set -Eeuo pipefail
 
-          USERNAME="$OPENCODE_BASIC_USER"
-          USER_HOME="/home/$USERNAME"
+          echo "Preparing XFCE environment..."
 
+          USERNAME="$OPENCODE_BASIC_USER"
+
+          if ! id "$USERNAME" >/dev/null 2>&1; then
+            echo "ERROR: RDP user does not exist."
+            exit 1
+          fi
+
+          USER_HOME=$(getent passwd "$USERNAME" | cut -d: -f6)
           UID_RDP=$(id -u "$USERNAME")
           GID_RDP=$(id -g "$USERNAME")
 
-          echo "Preparing isolated user environment..."
+          echo "Username: $USERNAME"
+          echo "Home: $USER_HOME"
+          echo "UID: $UID_RDP"
+          echo "GID: $GID_RDP"
 
-          # --------------------------------------------------------
-          # Create all required directories.
-          # --------------------------------------------------------
+          if [ ! -d "$USER_HOME" ]; then
+            echo "ERROR: User home directory missing."
+            exit 1
+          fi
 
-          sudo install -d \
-            -o "$UID_RDP" \
-            -g "$GID_RDP" \
-            -m 0755 \
+          # ------------------------------------------------------
+          # Create directories individually for better diagnostics
+          # ------------------------------------------------------
+
+          for DIR in \
             "$USER_HOME/.config" \
             "$USER_HOME/.cache" \
             "$USER_HOME/.local" \
             "$USER_HOME/.local/share" \
-            "$USER_HOME/.local/state"
+            "$USER_HOME/.local/state"; do
 
-          sudo install -d \
-            -o "$UID_RDP" \
-            -g "$GID_RDP" \
-            -m 0700 \
-            "/run/user/$UID_RDP"
+            echo "Preparing: $DIR"
 
-          # Verify runtime directory ownership.
-          RUNTIME_OWNER=$(stat -c '%u' "/run/user/$UID_RDP")
-          RUNTIME_MODE=$(stat -c '%a' "/run/user/$UID_RDP")
+            if ! sudo mkdir -p "$DIR"; then
+              echo "ERROR: Cannot create $DIR"
+              exit 1
+            fi
 
-          if [ "$RUNTIME_OWNER" != "$UID_RDP" ] ||
-             [ "$RUNTIME_MODE" != "700" ]; then
+            if ! sudo chown "$UID_RDP:$GID_RDP" "$DIR"; then
+              echo "ERROR: Cannot change ownership of $DIR"
+              exit 1
+            fi
 
-            echo "ERROR: Invalid XDG_RUNTIME_DIR."
-            exit 1
-          fi
+            if ! sudo chmod 0755 "$DIR"; then
+              echo "ERROR: Cannot change permissions of $DIR"
+              exit 1
+            fi
 
-          # --------------------------------------------------------
-          # Remove inherited/broken session state.
-          # --------------------------------------------------------
+          done
 
-          sudo rm -rf \
-            "$USER_HOME/.cache/sessions" \
-            "$USER_HOME/.config/xfce4"
+          # ------------------------------------------------------
+          # Clean old XFCE session cache
+          # ------------------------------------------------------
 
-          sudo mkdir -p \
+          sudo rm -rf "$USER_HOME/.cache/sessions"
+
+          # ------------------------------------------------------
+          # Remove old XFCE configuration
+          # ------------------------------------------------------
+
+          sudo rm -rf "$USER_HOME/.config/xfce4"
+
+          sudo mkdir -p "$USER_HOME/.config/xfce4"
+
+          sudo chown -R "$UID_RDP:$GID_RDP" \
             "$USER_HOME/.config" \
             "$USER_HOME/.cache" \
-            "$USER_HOME/.local/share"
+            "$USER_HOME/.local"
 
-          sudo chown -R "$USERNAME:$USERNAME" "$USER_HOME"
-
-          # --------------------------------------------------------
-          # Configure XFCE startup.
-          # --------------------------------------------------------
+          # ------------------------------------------------------
+          # Configure XRDP session
+          # ------------------------------------------------------
 
           sudo tee "$USER_HOME/.xsession" >/dev/null <<'EOF'
           #!/bin/sh
@@ -233,7 +252,14 @@ jobs:
           export XDG_DATA_HOME="$HOME/.local/share"
           export XDG_STATE_HOME="$HOME/.local/state"
 
-          export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+          # Let PAM/systemd manage the real runtime directory.
+          if [ -z "${XDG_RUNTIME_DIR:-}" ] ||
+             [ ! -d "$XDG_RUNTIME_DIR" ] ||
+             [ "$(stat -c '%u' "$XDG_RUNTIME_DIR" 2>/dev/null)" != "$(id -u)" ]; then
+              export XDG_RUNTIME_DIR="$HOME/.local/run"
+              mkdir -p "$XDG_RUNTIME_DIR"
+              chmod 0700 "$XDG_RUNTIME_DIR"
+          fi
 
           export XDG_SESSION_TYPE="x11"
           export XDG_CURRENT_DESKTOP="XFCE"
@@ -245,26 +271,37 @@ jobs:
           exec dbus-run-session -- startxfce4
           EOF
 
-          sudo chmod 755 "$USER_HOME/.xsession"
+          sudo chmod 0755 "$USER_HOME/.xsession"
 
-          sudo chown "$USERNAME:$USERNAME" \
+          sudo chown "$UID_RDP:$GID_RDP" \
             "$USER_HOME/.xsession"
 
-          # --------------------------------------------------------
-          # Verify configuration directories.
-          # --------------------------------------------------------
+          # ------------------------------------------------------
+          # Verify permissions
+          # ------------------------------------------------------
 
-          test -d /etc/xdg
+          for DIR in \
+            "$USER_HOME/.config" \
+            "$USER_HOME/.cache" \
+            "$USER_HOME/.local" \
+            "$USER_HOME/.local/share" \
+            "$USER_HOME/.local/state"; do
+
+            OWNER=$(stat -c '%u' "$DIR")
+
+            if [ "$OWNER" != "$UID_RDP" ]; then
+              echo "ERROR: Incorrect ownership: $DIR"
+              exit 1
+            fi
+
+          done
+
+          test -x "$USER_HOME/.xsession"
           test -d /etc/xdg/xfce4
 
-          test -w "$USER_HOME/.config"
-          test -w "$USER_HOME/.cache"
-          test -w "$USER_HOME/.local/share"
-
-          echo "User environment prepared."
-          echo "UID: $UID_RDP"
-          echo "GID: $GID_RDP"
-          echo "Runtime: /run/user/$UID_RDP"
+          echo "======================================"
+          echo "XFCE USER ENVIRONMENT READY"
+          echo "======================================"
 
       # ============================================================
       # 4. VERIFY XFCE CONFIGURATION
