@@ -1,274 +1,268 @@
-name: Web RDP on Ubuntu (Guacamole + Cloudflare Tunnel)
+name: Ubuntu RDP with bore (Auto-Update README)
 
 on:
   workflow_dispatch:
+    inputs:
+      session_minutes:
+        description: 'Duration in minutes'
+        required: true
+        default: '120'
 
-env:
-  PROXY_PORT: "8080"
-  LOG_DIR: "/tmp/rdp-logs"
+permissions:
+  contents: write
 
 jobs:
-  rdp-web:
+  rdp-tunnel:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 360
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # ------------------------------------------------------------------
-      # 1) XFCE + xrdp
+      # 1) نصب xrdp + XFCE و ساخت کاربر از OPENCODE_BASIC_USER/PASS
       # ------------------------------------------------------------------
-      - name: نصب XFCE و xrdp
+      - name: Install xrdp + XFCE and create user
+        shell: bash
+        env:
+          OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
+          OPENCODE_BASIC_PASS: ${{ secrets.OPENCODE_BASIC_PASS }}
         run: |
           set -euo pipefail
           sudo apt-get update -qq
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-            xfce4 xfce4-goodies xrdp dbus-x11 xterm \
-            curl wget unzip ca-certificates gnupg lsb-release
+            xfce4 xfce4-goodies xrdp dbus-x11 xterm curl wget
 
-          echo "xfce4-session" > /home/runner/.xsession
-          chown runner:runner /home/runner/.xsession
+          USERNAME="$OPENCODE_BASIC_USER"
+          PASSWORD="$OPENCODE_BASIC_PASS"
 
-          echo "runner:Passw0rd!123" | sudo chpasswd
-          sudo adduser xrdp ssl-cert || true
+          if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+            echo "ERROR: OPENCODE_BASIC_USER or OPENCODE_BASIC_PASS is empty"
+            exit 1
+          fi
+
+          if id "$USERNAME" >/dev/null 2>&1; then
+            sudo userdel -r "$USERNAME" || true
+          fi
+
+          sudo useradd -m -s /bin/bash "$USERNAME"
+          echo "$USERNAME:$PASSWORD" | sudo chpasswd
+          sudo usermod -aG sudo "$USERNAME"
+          echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-$USERNAME >/dev/null
+
+          echo "xfce4-session" | sudo tee /home/$USERNAME/.xsession >/dev/null
+          sudo chown $USERNAME:$USERNAME /home/$USERNAME/.xsession
+
           echo "allowed_users=anybody" | sudo tee -a /etc/xrdp/sesman.ini
+          sudo adduser xrdp ssl-cert || true
 
           sudo systemctl enable xrdp
           sudo systemctl restart xrdp
           sleep 3
-          sudo systemctl status xrdp --no-pager || true
+
+          if ! systemctl is-active --quiet xrdp; then
+            echo "ERROR: xrdp failed to start"
+            sudo journalctl -u xrdp -n 50 --no-pager
+            exit 1
+          fi
+          echo "User $USERNAME created and RDP enabled."
           sudo ss -tlnp | grep 3389 || true
 
       # ------------------------------------------------------------------
-      # 2) Docker
+      # 2) دانلود bore + ساخت اسکریپت رانر
       # ------------------------------------------------------------------
-      - name: نصب Docker
+      - name: Install bore and create runner script
+        shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get install -y -qq docker.io docker-compose-v2
-          sudo systemctl start docker
-          sudo usermod -aG docker $USER
-          sudo docker version
 
-      # ------------------------------------------------------------------
-      # 3) Guacamole stack
-      # ------------------------------------------------------------------
-      - name: راه‌اندازی Guacamole
-        run: |
-          set -euo pipefail
-          mkdir -p ~/guac/initdb
-          cd ~/guac
-
-          sudo docker compose down -v 2>/dev/null || true
-
-          echo "Generating init.sql..."
-          sudo docker run --rm guacamole/guacamole:latest \
-            /opt/guacamole/bin/initdb.sh --postgresql > initdb/init.sql
-          echo "init.sql size: $(wc -c < initdb/init.sql) bytes"
-          if [ ! -s initdb/init.sql ]; then
-            echo "::error::init.sql is empty"
-            exit 1
+          BORE_URL="https://github.com/ekzhang/bore/releases/latest/download/bore-v0.5.3-x86_64-unknown-linux-musl.tar.gz"
+          if ! curl -fsSL "$BORE_URL" -o bore.tar.gz; then
+            echo "Direct download failed, using install script"
+            curl -fsSL https://raw.githubusercontent.com/ekzhang/bore/main/install.sh | bash -s -- --to /usr/local/bin
+            BORE_BIN="/usr/local/bin/bore"
+          else
+            tar -xzf bore.tar.gz
+            chmod +x bore
+            BORE_BIN="./bore"
           fi
+          echo "Bore binary: $BORE_BIN"
+          $BORE_BIN --version || true
 
-          cat > docker-compose.yml <<'EOF'
-          services:
-            guacd:
-              image: guacamole/guacd:latest
-              restart: always
-              ports:
-                - "4822:4822"
-              extra_hosts:
-                - "host.docker.internal:host-gateway"
+          cat > bore_runner.sh <<'EOF'
+          #!/usr/bin/env bash
+          OUT_LOG="bore_out.log"
+          ERR_LOG="bore_err.log"
+          TUNNEL_HOST="bore.pub"
+          BORE_BIN="${BORE_BIN:-./bore}"
 
-            postgres:
-              image: postgres:16-alpine
-              restart: always
-              environment:
-                POSTGRES_DB: guacamole_db
-                POSTGRES_USER: guacamole_user
-                POSTGRES_PASSWORD: guacamole_pass
-              volumes:
-                - ./initdb:/docker-entrypoint-initdb.d:ro
-
-            guacamole:
-              image: guacamole/guacamole:latest
-              restart: always
-              ports:
-                - "8080:8080"
-              environment:
-                GUACD_HOSTNAME: guacd
-                POSTGRESQL_HOSTNAME: postgres
-                POSTGRESQL_DATABASE: guacamole_db
-                POSTGRESQL_USER: guacamole_user
-                POSTGRESQL_PASSWORD: guacamole_pass
-              depends_on:
-                - guacd
-                - postgres
-          EOF
-
-          sudo docker compose up -d
-          sudo docker ps -a
-
-      # ------------------------------------------------------------------
-      # 4) انتظار readiness
-      # ------------------------------------------------------------------
-      - name: انتظار آماده شدن Guacamole
-        run: |
-          set -euo pipefail
-          echo "Waiting for Guacamole..."
-          ok=0
-          for i in $(seq 1 60); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/guacamole/ || echo "000")
-            echo "[$i] HTTP $code"
-            if [ "$code" = "200" ] || [ "$code" = "302" ] || [ "$code" = "403" ]; then
-              ok=1
-              break
+          start_bore() {
+            pkill -f "$BORE_BIN local 3389" 2>/dev/null || true
+            : > "$OUT_LOG"; : > "$ERR_LOG"
+            nohup "$BORE_BIN" local 3389 --to "$TUNNEL_HOST" > "$OUT_LOG" 2> "$ERR_LOG" &
+            echo $! > bore.pid
+            sleep 8
+            CLEAN=$(sed -r 's/\x1b\[[0-9;]*m//g' "$OUT_LOG" || true)
+            PORT=$(echo "$CLEAN" | grep -oP 'listening at [\w\.]+:\K\d+' | head -n1 || true)
+            if [ -n "$PORT" ]; then
+              printf 'host=%s\nport=%s\n' "$TUNNEL_HOST" "$PORT" > connection.txt
+              echo "Tunnel established on port $PORT"
+              return 0
             fi
-            sleep 3
-          done
+            return 1
+          }
 
-          if [ "$ok" != "1" ]; then
-            echo "::error::Guacamole did not become ready"
-            sudo docker ps -a
-            sudo docker logs $(sudo docker ps -aqf "name=guacamole") 2>&1 | tail -80 || true
-            sudo docker logs $(sudo docker ps -aqf "name=postgres") 2>&1 | tail -80 || true
+          (
+            while true; do
+              (exec 3<>/dev/tcp/127.0.0.1/3389) 2>/dev/null || true
+              exec 3>&- 2>/dev/null || true
+              sleep 30
+            done
+          ) &
+
+          if ! start_bore; then
+            echo "ERROR: Could not start bore."
+            cat "$OUT_LOG" "$ERR_LOG" || true
             exit 1
           fi
-
-      # ------------------------------------------------------------------
-      # 5) گرفتن توکن + ساخت connection
-      # ------------------------------------------------------------------
-      - name: ساخت اتصال RDP در Guacamole
-        run: |
-          set -euo pipefail
-          BASE="http://localhost:8080/guacamole"
-          TOKEN=""
-
-          for attempt in $(seq 1 5); do
-            RESP=$(curl -s -X POST "$BASE/api/tokens" \
-              --data-urlencode "username=guacadmin" \
-              --data-urlencode "password=guacadmin" || true)
-            echo "attempt $attempt: $RESP" | head -c 300; echo
-
-            TOKEN=$(echo "$RESP" | python3 -c "
-          import sys, json
-          try:
-              print(json.load(sys.stdin).get('authToken',''))
-          except Exception:
-              print('')
-          " 2>/dev/null)
-
-            [ -n "$TOKEN" ] && break
-
-            if echo "$RESP" | grep -q "Too many failed"; then
-              echo "Rate limited; restarting guacamole container..."
-              sudo docker restart $(sudo docker ps -aqf "name=guacamole") || true
-              sleep 10
-            else
-              sleep 15
-            fi
-          done
-
-          if [ -z "$TOKEN" ]; then
-            echo "::error::Could not obtain Guacamole authToken"
-            sudo docker logs $(sudo docker ps -aqf "name=guacamole") 2>&1 | tail -60 || true
-            sudo docker logs $(sudo docker ps -aqf "name=postgres") 2>&1 | tail -60 || true
-            exit 1
-          fi
-
-          echo "Token acquired: ${TOKEN:0:12}..."
-
-          echo "Creating RDP connection..."
-          curl -s -X POST "$BASE/api/session/data/postgresql/connections?token=$TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "parentIdentifier": "ROOT",
-              "name": "Ubuntu RDP",
-              "protocol": "rdp",
-              "parameters": {
-                "hostname": "host.docker.internal",
-                "port": "3389",
-                "username": "runner",
-                "password": "Passw0rd!123",
-                "security": "any",
-                "ignore-cert": "true",
-                "resize-method": "display-update",
-                "color-depth": "24",
-                "enable-drive": "false"
-              },
-              "attributes": {
-                "max-connections": "",
-                "max-connections-per-user": "",
-                "weight": "",
-                "failover-only": "",
-                "guacd-port": "",
-                "guacd-encryption": ""
-              }
-            }' | head -c 800
-          echo
-          echo "Listing connections:"
-          curl -s "$BASE/api/session/data/postgresql/connections?token=$TOKEN" | head -c 800
-          echo
-
-      # ------------------------------------------------------------------
-      # 6) Cloudflare Tunnel — دقیقاً همان روش شما
-      # ------------------------------------------------------------------
-      - name: راه‌اندازی تونل Cloudflare
-        run: |
-          set -euo pipefail
-          mkdir -p "$LOG_DIR"
-
-          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
-          chmod +x cloudflared
-
-          nohup ./cloudflared tunnel --url "http://127.0.0.1:${PROXY_PORT}" --no-autoupdate > "$LOG_DIR/cloudflare.log" 2>&1 &
-          echo "CLOUDFLARED_PID=$!" >> "$GITHUB_ENV"
-
-          sleep 8
-          TUNNEL_URL=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' "$LOG_DIR/cloudflare.log" | head -n1 || true)
-          if [ -z "$TUNNEL_URL" ]; then
-            echo "❌ خطا در ساخت تونل"
-            cat "$LOG_DIR/cloudflare.log"
-            exit 1
-          fi
-          echo "✅ تونل: $TUNNEL_URL"
-          echo "TUNNEL_URL=$TUNNEL_URL" >> "$GITHUB_ENV"
-          echo "$TUNNEL_URL" > opencode-url.txt
-
-      # ------------------------------------------------------------------
-      # 7) نمایش اطلاعات + keep-alive
-      # ------------------------------------------------------------------
-      - name: نمایش اطلاعات و نگه‌داشتن job
-        run: |
-          set -euo pipefail
-          echo "==================================================="
-          echo "  Web RDP (Guacamole) via Cloudflare Tunnel"
-          echo "  URL:  $TUNNEL_URL/guacamole"
-          echo ""
-          echo "  Login Guacamole:  guacadmin / guacadmin"
-          echo "  RDP connection:   Ubuntu RDP  (runner / Passw0rd!123)"
-          echo "==================================================="
 
           while true; do
-            sleep 300
-            echo "[$(date)] tunnel: $TUNNEL_URL"
-            echo -n "xrdp: "; sudo systemctl is-active xrdp || true
-            echo -n "guac http: "; curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/guacamole/ || true
-
-            if ! kill -0 "${CLOUDFLARED_PID:-0}" 2>/dev/null; then
-              echo "tunnel died, restarting..."
-              nohup ./cloudflared tunnel --url "http://127.0.0.1:${PROXY_PORT}" --no-autoupdate > "$LOG_DIR/cloudflare.log" 2>&1 &
-              echo "CLOUDFLARED_PID=$!" >> "$GITHUB_ENV"
-              sleep 8
-              NEW=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' "$LOG_DIR/cloudflare.log" | head -n1 || true)
-              if [ -n "$NEW" ]; then
-                echo "::warning::Tunnel restarted, new URL: $NEW"
-                TUNNEL_URL="$NEW"
-                echo "$NEW" > opencode-url.txt
-              else
-                echo "::error::Tunnel restart failed"
-                cat "$LOG_DIR/cloudflare.log" || true
-              fi
+            sleep 30
+            if ! kill -0 "$(cat bore.pid 2>/dev/null)" 2>/dev/null; then
+              echo "Bore stopped. Restarting..."
+              start_bore || echo "restart failed"
             fi
           done
+          EOF
+          chmod +x bore_runner.sh
+          echo "bore_runner.sh created."
+
+      # ------------------------------------------------------------------
+      # 3) اجرای detached bore runner
+      # ------------------------------------------------------------------
+      - name: Start bore tunnel (detached)
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f connection.txt bore_out.log bore_err.log bore.pid
+
+          nohup env BORE_BIN="${BORE_BIN:-./bore}" ./bore_runner.sh > bore_runner.log 2>&1 &
+          echo $! > bore_runner.pid
+          echo "Bore runner started in background (pid $(cat bore_runner.pid))."
+
+          echo "Waiting for tunnel to be ready..."
+          for i in $(seq 1 30); do
+            if [ -f connection.txt ]; then break; fi
+            sleep 1
+          done
+          if [ -f connection.txt ]; then
+            echo "Tunnel is ready:"; cat connection.txt
+          else
+            echo "WARNING: Tunnel may not have started. Will try to continue."
+            echo "--- bore_runner.log ---"; cat bore_runner.log || true
+            echo "--- bore_out.log ---";    cat bore_out.log || true
+            echo "--- bore_err.log ---";    cat bore_err.log || true
+          fi
+
+      # ------------------------------------------------------------------
+      # 4) به‌روزرسانی README
+      # ------------------------------------------------------------------
+      - name: Update README.md
+        shell: bash
+        env:
+          OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
+        run: |
+          set -euo pipefail
+          if [ ! -f connection.txt ]; then
+            echo "ERROR: connection.txt not found."
+            exit 1
+          fi
+
+          HOST=$(grep '^host=' connection.txt | cut -d= -f2)
+          PORT=$(grep '^port=' connection.txt | cut -d= -f2)
+          CONNECTION_STRING="${HOST}:${PORT}"
+
+          USERNAME="$OPENCODE_BASIC_USER"
+          EXPIRY=$(date -u -d "+${{ github.event.inputs.session_minutes }} minutes" '+%Y-%m-%d %H:%M:%S UTC')
+
+          NEW_SECTION="## Ubuntu RDP Access
+          **Connection Address:** \`$CONNECTION_STRING\`
+          **Username:** \`$USERNAME\`
+          **Password:** (stored in GitHub Secrets: \`OPENCODE_BASIC_PASS\`)
+          **Expires:** $EXPIRY
+          "
+
+          if [ ! -f README.md ]; then
+            printf '%s\n' "$NEW_SECTION" > README.md
+          else
+            if grep -q '## Ubuntu RDP Access' README.md; then
+              awk '/^## Ubuntu RDP Access/ {exit} {print}' README.md > README.tmp
+              printf '%s\n' "$NEW_SECTION" >> README.tmp
+              mv README.tmp README.md
+            else
+              printf '\n%s\n' "$NEW_SECTION" >> README.md
+            fi
+          fi
+          echo "README.md updated."
+
+      # ------------------------------------------------------------------
+      # 5) commit + push
+      # ------------------------------------------------------------------
+      - name: Commit and push README.md
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Update RDP access info [skip ci]" --allow-empty
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ------------------------------------------------------------------
+      # 6) نمایش اطلاعات
+      # ------------------------------------------------------------------
+      - name: Display connection info
+        shell: bash
+        env:
+          OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
+        run: |
+          set -euo pipefail
+          HOST=$(grep '^host=' connection.txt | cut -d= -f2)
+          PORT=$(grep '^port=' connection.txt | cut -d= -f2)
+          echo ""
+          echo "======================================================"
+          echo "  UBUNTU RDP READY FOR ANDROID"
+          echo "======================================================"
+          echo "  Host: $HOST"
+          echo "  Port: $PORT"
+          echo "  Username: $OPENCODE_BASIC_USER"
+          echo "  Password: (your secret OPENCODE_BASIC_PASS)"
+          echo "======================================================"
+          echo ""
+          echo "In Microsoft Remote Desktop on Android:"
+          echo "  PC Name: $HOST:$PORT"
+          echo "  User Name: $OPENCODE_BASIC_USER"
+
+      # ------------------------------------------------------------------
+      # 7) keep-alive
+      # ------------------------------------------------------------------
+      - name: Keep session alive
+        shell: bash
+        run: |
+          set -euo pipefail
+          DURATION=${{ github.event.inputs.session_minutes }}
+          END_TIME=$(( $(date +%s) + DURATION*60 ))
+          echo "Session will stay active for $DURATION minutes."
+          while [ "$(date +%s)" -lt "$END_TIME" ]; do
+            NOW=$(date +%s)
+            REMAIN=$(( END_TIME - NOW ))
+            printf 'Remaining %02d:%02d:%02d | %s\n' \
+              $((REMAIN/3600)) $(((REMAIN%3600)/60)) $((REMAIN%60)) "$(date -u +%H:%M:%S)"
+            sleep 60
+          done
+          echo "Time is up."
