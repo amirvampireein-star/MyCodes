@@ -33,7 +33,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # ============================================================
-      # 2. INSTALL XFCE + XRDP + XORG + DBUS
+      # 2. INSTALL XFCE + XRDP + DBUS
       # ============================================================
 
       - name: Install desktop environment and XRDP
@@ -54,15 +54,23 @@ jobs:
             exit 1
           fi
 
-          if [[ ! "$OPENCODE_BASIC_USER" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]]; then
-            echo "ERROR: Invalid username."
+          # IMPORTANT:
+          # Do not impose an artificial username regex.
+          # Let Linux useradd validate the actual username.
+
+          USERNAME="$OPENCODE_BASIC_USER"
+
+          if [ -z "$USERNAME" ]; then
+            echo "ERROR: OPENCODE_BASIC_USER is empty."
             exit 1
           fi
 
           if [ -z "$OPENCODE_BASIC_PASS" ]; then
-            echo "ERROR: Password secret is empty."
+            echo "ERROR: OPENCODE_BASIC_PASS is empty."
             exit 1
           fi
+
+          echo "Updating package lists..."
 
           sudo apt-get update -qq
 
@@ -99,7 +107,6 @@ jobs:
           for BIN in \
             startxfce4 \
             xfce4-session \
-            xfconfd \
             dbus-run-session \
             Xorg; do
 
@@ -114,7 +121,7 @@ jobs:
           # Create RDP user
           # --------------------------------------------------------
 
-          USERNAME="$OPENCODE_BASIC_USER"
+          echo "Creating RDP user..."
 
           if id "$USERNAME" >/dev/null 2>&1; then
             sudo userdel -r "$USERNAME" || true
@@ -127,24 +134,23 @@ jobs:
 
           sudo usermod -aG sudo "$USERNAME"
 
+          # Use a fixed sudoers filename.
+          sudo rm -f /etc/sudoers.d/90-rdp-user
+
           echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" |
-            sudo tee "/etc/sudoers.d/90-$USERNAME" >/dev/null
+            sudo tee /etc/sudoers.d/90-rdp-user >/dev/null
 
-          sudo chmod 0440 "/etc/sudoers.d/90-$USERNAME"
+          sudo chmod 0440 /etc/sudoers.d/90-rdp-user
 
-          sudo visudo -cf "/etc/sudoers.d/90-$USERNAME"
+          sudo visudo -cf /etc/sudoers.d/90-rdp-user
 
           # --------------------------------------------------------
-          # Fix home directory permissions
+          # Home directory permissions
           # --------------------------------------------------------
 
           sudo chown -R "$USERNAME:$USERNAME" "/home/$USERNAME"
 
           sudo chmod 755 "/home/$USERNAME"
-
-          # --------------------------------------------------------
-          # XFCE configuration
-          # --------------------------------------------------------
 
           sudo mkdir -p \
             "/home/$USERNAME/.config" \
@@ -157,23 +163,20 @@ jobs:
             "/home/$USERNAME/.local"
 
           # --------------------------------------------------------
-          # IMPORTANT: Fix XFCE session startup
+          # XFCE SESSION FIX
           # --------------------------------------------------------
+
+          echo "Configuring XFCE session..."
 
           sudo tee "/home/$USERNAME/.xsession" >/dev/null <<'EOF'
           #!/bin/sh
 
-          # Remove inherited session buses.
           unset DBUS_SESSION_BUS_ADDRESS
           unset SESSION_MANAGER
 
-          # Ensure XFCE can find its system configuration.
           export XDG_CONFIG_DIRS="/etc/xdg"
-
-          # Ensure system desktop data is available.
           export XDG_DATA_DIRS="/usr/local/share:/usr/share"
 
-          # Start a clean D-Bus session and XFCE desktop.
           exec dbus-run-session -- startxfce4
           EOF
 
@@ -192,7 +195,7 @@ jobs:
           fi
 
           if [ ! -d /etc/xdg/xfce4 ]; then
-            echo "ERROR: XFCE system configuration is missing."
+            echo "ERROR: XFCE configuration directory missing."
             exit 1
           fi
 
@@ -204,31 +207,24 @@ jobs:
 
           sudo adduser xrdp ssl-cert || true
 
-          # Remove the incorrect allowed_users entry previously
-          # appended to sesman.ini.
-          sudo sed -i '/^[[:space:]]*allowed_users[[:space:]]*=/d' \
+          # Remove misplaced allowed_users entries.
+          sudo sed -i \
+            '/^[[:space:]]*allowed_users[[:space:]]*=/d' \
             /etc/xrdp/sesman.ini
 
-          # Ensure the Xorg backend is installed.
           if ! dpkg -s xorgxrdp >/dev/null 2>&1; then
             echo "ERROR: xorgxrdp is not installed."
             exit 1
           fi
 
-          # Check XRDP configuration.
-          if [ ! -f /etc/xrdp/xrdp.ini ]; then
-            echo "ERROR: xrdp.ini missing."
-            exit 1
-          fi
-
-          if [ ! -f /etc/xrdp/sesman.ini ]; then
-            echo "ERROR: sesman.ini missing."
-            exit 1
-          fi
+          test -f /etc/xrdp/xrdp.ini
+          test -f /etc/xrdp/sesman.ini
 
           # --------------------------------------------------------
           # Start XRDP services
           # --------------------------------------------------------
+
+          echo "Starting XRDP..."
 
           sudo systemctl enable xrdp
           sudo systemctl enable xrdp-sesman
@@ -253,10 +249,6 @@ jobs:
             fi
 
           done
-
-          # --------------------------------------------------------
-          # Check RDP port
-          # --------------------------------------------------------
 
           if ! sudo ss -lnt | grep -q ':3389'; then
             echo "ERROR: XRDP is not listening on port 3389."
@@ -308,10 +300,10 @@ jobs:
                   break
           ' <<< "$API")
 
-          echo "Bore version: $TAG"
+          echo "Latest Bore version: $TAG"
 
           if [ -z "$ASSET_URL" ]; then
-            echo "ERROR: No suitable Bore Linux binary found."
+            echo "ERROR: No suitable Linux x86_64 asset found."
             exit 1
           fi
 
@@ -340,8 +332,7 @@ jobs:
 
           chmod +x ./bore
 
-          echo "Bore binary installed."
-
+          echo "Bore version:"
           ./bore --version || true
 
           # --------------------------------------------------------
@@ -363,7 +354,6 @@ jobs:
 
               echo "Starting Bore tunnel..."
 
-              # Stop previous Bore process if necessary.
               if [ -f "$PID_FILE" ]; then
 
                   OLD_PID=$(cat "$PID_FILE" 2>/dev/null || true)
@@ -384,7 +374,6 @@ jobs:
 
               echo "$BORE_PID" > "$PID_FILE"
 
-              # Wait for Bore to announce its public port.
               for i in $(seq 1 30); do
 
                   if ! kill -0 "$BORE_PID" 2>/dev/null; then
@@ -440,13 +429,13 @@ jobs:
               return 1
           }
 
-          # Initial startup.
+          # Initial startup
           if ! start_bore; then
               echo "Initial Bore startup failed."
               exit 1
           fi
 
-          # Monitor Bore and restart if necessary.
+          # Monitor and restart Bore
           while true; do
 
               sleep 15
@@ -461,7 +450,7 @@ jobs:
                   rm -f connection.txt
 
                   if ! start_bore; then
-                      echo "Bore restart failed. Retrying in 10 seconds."
+                      echo "Bore restart failed."
                       sleep 10
                   fi
 
@@ -475,7 +464,7 @@ jobs:
           echo "Bore runner created."
 
       # ============================================================
-      # 4. START BORE TUNNEL
+      # 4. START BORE
       # ============================================================
 
       - name: Start Bore tunnel
@@ -513,7 +502,9 @@ jobs:
 
             fi
 
-            if ! kill -0 "$(cat bore_runner.pid)" 2>/dev/null; then
+            RUNNER_PID=$(cat bore_runner.pid)
+
+            if ! kill -0 "$RUNNER_PID" 2>/dev/null; then
               echo "ERROR: Bore runner exited."
               cat bore_runner.log || true
               exit 1
@@ -538,7 +529,7 @@ jobs:
           cat connection.txt
 
       # ============================================================
-      # 5. VERIFY XFCE CONFIGURATION
+      # 5. VERIFY DESKTOP
       # ============================================================
 
       - name: Verify desktop environment
@@ -549,41 +540,26 @@ jobs:
 
           echo "Checking desktop environment..."
 
-          echo "Installed XFCE packages:"
-
-          dpkg-query -W \
-            -f='${binary:Package} ${Status}\n' \
-            'xfce4*' \
-            'xfconf*' \
-            'xorgxrdp' \
-            'xrdp' 2>/dev/null || true
-
-          echo ""
           echo "Checking D-Bus..."
 
-          if ! command -v dbus-run-session >/dev/null; then
-            echo "ERROR: dbus-run-session unavailable."
+          if ! dbus-run-session -- \
+            sh -c 'test -n "$DBUS_SESSION_BUS_ADDRESS"'; then
+
+            echo "ERROR: D-Bus initialization failed."
             exit 1
           fi
 
-          # Test that a new D-Bus session can start.
-          if ! dbus-run-session -- sh -c 'test -n "$DBUS_SESSION_BUS_ADDRESS"'; then
-            echo "ERROR: D-Bus session initialization failed."
-            exit 1
-          fi
+          echo "D-Bus initialization: OK"
 
-          echo "D-Bus session initialization: OK"
+          echo "Checking XFCE..."
 
-          echo ""
-          echo "Checking XFCE configuration..."
-
+          test -d /etc/xdg
           test -d /etc/xdg/xfce4
           test -x /usr/bin/startxfce4
           test -x /usr/bin/xfce4-session
 
           echo "XFCE installation: OK"
 
-          echo ""
           echo "Checking XRDP..."
 
           sudo systemctl is-active xrdp
@@ -591,8 +567,7 @@ jobs:
 
           sudo ss -lntp | grep ':3389'
 
-          echo ""
-          echo "Desktop environment verification completed."
+          echo "Desktop verification completed."
 
       # ============================================================
       # 6. UPDATE README
@@ -691,7 +666,7 @@ jobs:
           fi
 
       # ============================================================
-      # 8. DISPLAY CONNECTION INFORMATION
+      # 8. DISPLAY CONNECTION
       # ============================================================
 
       - name: Display connection info
@@ -760,14 +735,16 @@ jobs:
               "$SECONDS" \
               "$(date -u +%H:%M:%S)"
 
-            # Make sure XRDP remains active.
+            # Keep XRDP alive.
             if ! sudo systemctl is-active --quiet xrdp; then
               echo "WARNING: XRDP stopped. Restarting..."
               sudo systemctl restart xrdp
             fi
 
-            # Make sure the Bore runner is alive.
-            if ! kill -0 "$(cat bore_runner.pid)" 2>/dev/null; then
+            # Keep Bore runner alive.
+            RUNNER_PID=$(cat bore_runner.pid)
+
+            if ! kill -0 "$RUNNER_PID" 2>/dev/null; then
               echo "ERROR: Bore runner stopped."
               exit 1
             fi
@@ -776,7 +753,6 @@ jobs:
 
           done
 
-          echo ""
           echo "Session duration completed."
 
       # ============================================================
@@ -791,11 +767,19 @@ jobs:
           echo "Cleaning up..."
 
           if [ -f bore.pid ]; then
-            kill "$(cat bore.pid)" 2>/dev/null || true
+            BORE_PID=$(cat bore.pid)
+
+            if [[ "$BORE_PID" =~ ^[0-9]+$ ]]; then
+              kill "$BORE_PID" 2>/dev/null || true
+            fi
           fi
 
           if [ -f bore_runner.pid ]; then
-            kill "$(cat bore_runner.pid)" 2>/dev/null || true
+            RUNNER_PID=$(cat bore_runner.pid)
+
+            if [[ "$RUNNER_PID" =~ ^[0-9]+$ ]]; then
+              kill "$RUNNER_PID" 2>/dev/null || true
+            fi
           fi
 
           sudo systemctl stop xrdp 2>/dev/null || true
