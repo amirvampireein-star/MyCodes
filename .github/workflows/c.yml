@@ -1,3 +1,4 @@
+
 name: Ubuntu RDP with bore (Auto-Update README)
 
 on:
@@ -11,287 +12,793 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ubuntu-rdp-session
+  cancel-in-progress: true
+
 jobs:
   rdp-tunnel:
     runs-on: ubuntu-latest
     timeout-minutes: 360
 
     steps:
+
+      # ============================================================
+      # 1. CHECKOUT
+      # ============================================================
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # ------------------------------------------------------------------
-      # 1) نصب xrdp + XFCE و ساخت کاربر از OPENCODE_BASIC_USER/PASS
-      # ------------------------------------------------------------------
-      - name: Install xrdp + XFCE and create user
+      # ============================================================
+      # 2. INSTALL XFCE + XRDP + XORG + DBUS
+      # ============================================================
+
+      - name: Install desktop environment and XRDP
         shell: bash
         env:
           OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
           OPENCODE_BASIC_PASS: ${{ secrets.OPENCODE_BASIC_PASS }}
+          SESSION_MINUTES: ${{ github.event.inputs.session_minutes }}
+
         run: |
-          set -euo pipefail
-          sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-            xfce4 xfce4-goodies xrdp dbus-x11 xterm curl wget
+          set -Eeuo pipefail
 
-          USERNAME="$OPENCODE_BASIC_USER"
-          PASSWORD="$OPENCODE_BASIC_PASS"
+          echo "Updating Ubuntu packages..."
 
-          if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
-            echo "ERROR: OPENCODE_BASIC_USER or OPENCODE_BASIC_PASS is empty"
+          if ! [[ "$SESSION_MINUTES" =~ ^[0-9]+$ ]] ||
+             (( SESSION_MINUTES < 1 || SESSION_MINUTES > 330 )); then
+            echo "ERROR: session_minutes must be between 1 and 330."
             exit 1
           fi
+
+          if [[ ! "$OPENCODE_BASIC_USER" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]]; then
+            echo "ERROR: Invalid username."
+            exit 1
+          fi
+
+          if [ -z "$OPENCODE_BASIC_PASS" ]; then
+            echo "ERROR: Password secret is empty."
+            exit 1
+          fi
+
+          sudo apt-get update -qq
+
+          echo "Installing XFCE, XRDP, Xorg and D-Bus..."
+
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            xfce4 \
+            xfce4-goodies \
+            xfce4-session \
+            xfconf \
+            xfce4-panel \
+            xfdesktop4 \
+            xfwm4 \
+            thunar \
+            xrdp \
+            xorgxrdp \
+            xserver-xorg-core \
+            dbus \
+            dbus-x11 \
+            dbus-user-session \
+            dbus-daemon \
+            xauth \
+            x11-xserver-utils \
+            xterm \
+            curl \
+            wget \
+            ca-certificates \
+            python3 \
+            tar \
+            gzip
+
+          echo "Checking required binaries..."
+
+          for BIN in \
+            startxfce4 \
+            xfce4-session \
+            xfconfd \
+            dbus-run-session \
+            Xorg; do
+
+            if ! command -v "$BIN" >/dev/null 2>&1; then
+              echo "ERROR: Missing binary: $BIN"
+              exit 1
+            fi
+
+          done
+
+          # --------------------------------------------------------
+          # Create RDP user
+          # --------------------------------------------------------
+
+          USERNAME="$OPENCODE_BASIC_USER"
 
           if id "$USERNAME" >/dev/null 2>&1; then
             sudo userdel -r "$USERNAME" || true
           fi
 
           sudo useradd -m -s /bin/bash "$USERNAME"
-          echo "$USERNAME:$PASSWORD" | sudo chpasswd
+
+          printf '%s:%s\n' \
+            "$USERNAME" "$OPENCODE_BASIC_PASS" | sudo chpasswd
+
           sudo usermod -aG sudo "$USERNAME"
-          echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-$USERNAME >/dev/null
 
-          echo "xfce4-session" | sudo tee /home/$USERNAME/.xsession >/dev/null
-          sudo chown $USERNAME:$USERNAME /home/$USERNAME/.xsession
+          echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" |
+            sudo tee "/etc/sudoers.d/90-$USERNAME" >/dev/null
 
-          echo "allowed_users=anybody" | sudo tee -a /etc/xrdp/sesman.ini
+          sudo chmod 0440 "/etc/sudoers.d/90-$USERNAME"
+
+          sudo visudo -cf "/etc/sudoers.d/90-$USERNAME"
+
+          # --------------------------------------------------------
+          # Fix home directory permissions
+          # --------------------------------------------------------
+
+          sudo chown -R "$USERNAME:$USERNAME" "/home/$USERNAME"
+
+          sudo chmod 755 "/home/$USERNAME"
+
+          # --------------------------------------------------------
+          # XFCE configuration
+          # --------------------------------------------------------
+
+          sudo mkdir -p \
+            "/home/$USERNAME/.config" \
+            "/home/$USERNAME/.cache" \
+            "/home/$USERNAME/.local/share"
+
+          sudo chown -R "$USERNAME:$USERNAME" \
+            "/home/$USERNAME/.config" \
+            "/home/$USERNAME/.cache" \
+            "/home/$USERNAME/.local"
+
+          # --------------------------------------------------------
+          # IMPORTANT: Fix XFCE session startup
+          # --------------------------------------------------------
+
+          sudo tee "/home/$USERNAME/.xsession" >/dev/null <<'EOF'
+          #!/bin/sh
+
+          # Remove inherited session buses.
+          unset DBUS_SESSION_BUS_ADDRESS
+          unset SESSION_MANAGER
+
+          # Ensure XFCE can find its system configuration.
+          export XDG_CONFIG_DIRS="/etc/xdg"
+
+          # Ensure system desktop data is available.
+          export XDG_DATA_DIRS="/usr/local/share:/usr/share"
+
+          # Start a clean D-Bus session and XFCE desktop.
+          exec dbus-run-session -- startxfce4
+          EOF
+
+          sudo chmod 755 "/home/$USERNAME/.xsession"
+
+          sudo chown "$USERNAME:$USERNAME" \
+            "/home/$USERNAME/.xsession"
+
+          # --------------------------------------------------------
+          # Validate XFCE configuration
+          # --------------------------------------------------------
+
+          if [ ! -d /etc/xdg ]; then
+            echo "ERROR: /etc/xdg does not exist."
+            exit 1
+          fi
+
+          if [ ! -d /etc/xdg/xfce4 ]; then
+            echo "ERROR: XFCE system configuration is missing."
+            exit 1
+          fi
+
+          echo "XFCE configuration validated."
+
+          # --------------------------------------------------------
+          # XRDP configuration
+          # --------------------------------------------------------
+
           sudo adduser xrdp ssl-cert || true
 
+          # Remove the incorrect allowed_users entry previously
+          # appended to sesman.ini.
+          sudo sed -i '/^[[:space:]]*allowed_users[[:space:]]*=/d' \
+            /etc/xrdp/sesman.ini
+
+          # Ensure the Xorg backend is installed.
+          if ! dpkg -s xorgxrdp >/dev/null 2>&1; then
+            echo "ERROR: xorgxrdp is not installed."
+            exit 1
+          fi
+
+          # Check XRDP configuration.
+          if [ ! -f /etc/xrdp/xrdp.ini ]; then
+            echo "ERROR: xrdp.ini missing."
+            exit 1
+          fi
+
+          if [ ! -f /etc/xrdp/sesman.ini ]; then
+            echo "ERROR: sesman.ini missing."
+            exit 1
+          fi
+
+          # --------------------------------------------------------
+          # Start XRDP services
+          # --------------------------------------------------------
+
           sudo systemctl enable xrdp
+          sudo systemctl enable xrdp-sesman
+
+          sudo systemctl restart xrdp-sesman
           sudo systemctl restart xrdp
-          sleep 3
 
-          if ! systemctl is-active --quiet xrdp; then
-            echo "ERROR: xrdp failed to start"
-            sudo journalctl -u xrdp -n 50 --no-pager
-            exit 1
-          fi
-          echo "User $USERNAME created and RDP enabled."
-          sudo ss -tlnp | grep 3389 || true
+          sleep 5
 
-      # ------------------------------------------------------------------
-      # 2) دانلود bore از GitHub API + ساخت اسکریپت رانر (نسخه اصلاح‌شده)
-      # ------------------------------------------------------------------
-      - name: Install bore and create runner script
-        shell: bash
-        run: |
-          set -euo pipefail
+          for SERVICE in xrdp xrdp-sesman; do
 
-          API=$(curl -fsSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/ekzhang/bore/releases/latest)
-          TAG=$(echo "$API" | python3 -c "import sys,json;print(json.load(sys.stdin)['tag_name'])")
-          ASSET_URL=$(echo "$API" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          for a in data['assets']:
-              n = a['name']
-              if 'x86_64-unknown-linux' in n and n.endswith('.tar.gz'):
-                  print(a['browser_download_url']); break
-          ")
-          echo "Latest bore tag: $TAG"
-          echo "Asset URL: $ASSET_URL"
-          if [ -z "$ASSET_URL" ]; then
-            echo "ERROR: no suitable linux x86_64 asset found"
-            echo "$API" | python3 -m json.tool | head -80
-            exit 1
-          fi
+            if ! sudo systemctl is-active --quiet "$SERVICE"; then
 
-          # پاکسازی هر bore قدیمی برای جلوگیری از خطای mv روی خودش
-          rm -f bore bore.tar.gz
+              echo "ERROR: $SERVICE failed."
 
-          curl -fsSL "$ASSET_URL" -o bore.tar.gz
-          tar -xzf bore.tar.gz
+              sudo journalctl \
+                -u "$SERVICE" \
+                -n 80 \
+                --no-pager || true
 
-          if [ -x ./bore ]; then
-            echo "Found ./bore after extraction"
-          else
-            FOUND=$(find . -maxdepth 2 -type f -name 'bore*' -executable ! -name '*.tar.gz' | head -n1 || true)
-            if [ -z "$FOUND" ]; then
-              echo "ERROR: bore binary not found after extraction"
-              ls -la
               exit 1
             fi
-            mv "$FOUND" ./bore
+
+          done
+
+          # --------------------------------------------------------
+          # Check RDP port
+          # --------------------------------------------------------
+
+          if ! sudo ss -lnt | grep -q ':3389'; then
+            echo "ERROR: XRDP is not listening on port 3389."
+            exit 1
+          fi
+
+          echo "=========================================="
+          echo "XFCE + XRDP successfully installed."
+          echo "Username: $USERNAME"
+          echo "RDP Port: 3389"
+          echo "=========================================="
+
+      # ============================================================
+      # 3. INSTALL BORE
+      # ============================================================
+
+      - name: Install bore and create runner
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        run: |
+          set -Eeuo pipefail
+
+          echo "Fetching latest Bore release..."
+
+          API=$(curl -fsSL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/ekzhang/bore/releases/latest)
+
+          TAG=$(python3 -c \
+            "import json,sys; print(json.load(sys.stdin)['tag_name'])" \
+            <<< "$API")
+
+          ASSET_URL=$(python3 -c '
+          import json,sys
+
+          data=json.load(sys.stdin)
+
+          for asset in data.get("assets", []):
+              name=asset["name"]
+
+              if (
+                  "x86_64-unknown-linux" in name
+                  and name.endswith(".tar.gz")
+              ):
+                  print(asset["browser_download_url"])
+                  break
+          ' <<< "$API")
+
+          echo "Bore version: $TAG"
+
+          if [ -z "$ASSET_URL" ]; then
+            echo "ERROR: No suitable Bore Linux binary found."
+            exit 1
+          fi
+
+          rm -f bore bore.tar.gz
+
+          curl -fL "$ASSET_URL" -o bore.tar.gz
+
+          tar -xzf bore.tar.gz
+
+          if [ ! -x ./bore ]; then
+
+            FOUND=$(find . -maxdepth 3 \
+              -type f \
+              -name bore \
+              -executable \
+              | head -n 1 || true)
+
+            if [ -z "$FOUND" ]; then
+              echo "ERROR: Bore binary not found."
+              find . -maxdepth 3 -type f
+              exit 1
+            fi
+
+            cp "$FOUND" ./bore
           fi
 
           chmod +x ./bore
-          echo "Bore version:"
+
+          echo "Bore binary installed."
+
           ./bore --version || true
+
+          # --------------------------------------------------------
+          # Bore runner
+          # --------------------------------------------------------
 
           cat > bore_runner.sh <<'EOF'
           #!/usr/bin/env bash
-          OUT_LOG="bore_out.log"
-          ERR_LOG="bore_err.log"
-          TUNNEL_HOST="bore.pub"
+
+          set -u
+
           BORE_BIN="./bore"
+          TUNNEL_HOST="bore.pub"
+
+          OUT_LOG="bore_out.log"
+          PID_FILE="bore.pid"
 
           start_bore() {
-            pkill -f "$BORE_BIN local 3389" 2>/dev/null || true
-            : > "$OUT_LOG"; : > "$ERR_LOG"
-            nohup "$BORE_BIN" local 3389 --to "$TUNNEL_HOST" > "$OUT_LOG" 2> "$ERR_LOG" &
-            echo $! > bore.pid
-            sleep 8
-            CLEAN=$(sed -r 's/\x1b\[[0-9;]*m//g' "$OUT_LOG" || true)
-            PORT=$(echo "$CLEAN" | grep -oP 'listening at [\w\.]+:\K\d+' | head -n1 || true)
-            if [ -n "$PORT" ]; then
-              printf 'host=%s\nport=%s\n' "$TUNNEL_HOST" "$PORT" > connection.txt
-              echo "Tunnel established on port $PORT"
-              return 0
-            fi
-            return 1
+
+              echo "Starting Bore tunnel..."
+
+              # Stop previous Bore process if necessary.
+              if [ -f "$PID_FILE" ]; then
+
+                  OLD_PID=$(cat "$PID_FILE" 2>/dev/null || true)
+
+                  if [[ "$OLD_PID" =~ ^[0-9]+$ ]]; then
+                      kill "$OLD_PID" 2>/dev/null || true
+                  fi
+
+              fi
+
+              : > "$OUT_LOG"
+
+              nohup "$BORE_BIN" local 3389 \
+                  --to "$TUNNEL_HOST" \
+                  > "$OUT_LOG" 2>&1 &
+
+              BORE_PID=$!
+
+              echo "$BORE_PID" > "$PID_FILE"
+
+              # Wait for Bore to announce its public port.
+              for i in $(seq 1 30); do
+
+                  if ! kill -0 "$BORE_PID" 2>/dev/null; then
+                      echo "ERROR: Bore process exited."
+                      cat "$OUT_LOG" || true
+                      return 1
+                  fi
+
+                  CLEAN=$(sed -r \
+                      's/\x1b\[[0-9;]*m//g' \
+                      "$OUT_LOG" 2>/dev/null || true)
+
+                  ENDPOINT=$(echo "$CLEAN" |
+                      grep -Eo 'listening at [^[:space:]]+:[0-9]+' |
+                      tail -n 1 |
+                      awk '{print $3}' || true)
+
+                  if [ -n "$ENDPOINT" ]; then
+
+                      HOST="${ENDPOINT%:*}"
+                      PORT="${ENDPOINT##*:}"
+
+                      if [[ "$PORT" =~ ^[0-9]+$ ]]; then
+
+                          TMP_FILE="connection.txt.tmp"
+
+                          printf 'host=%s\nport=%s\n' \
+                              "$HOST" "$PORT" > "$TMP_FILE"
+
+                          mv "$TMP_FILE" connection.txt
+
+                          echo "================================"
+                          echo "BORE TUNNEL ESTABLISHED"
+                          echo "Host: $HOST"
+                          echo "Port: $PORT"
+                          echo "================================"
+
+                          return 0
+                      fi
+
+                  fi
+
+                  sleep 1
+
+              done
+
+              echo "ERROR: Bore startup timed out."
+
+              cat "$OUT_LOG" || true
+
+              kill "$BORE_PID" 2>/dev/null || true
+
+              return 1
           }
 
-          # keep-alive probe هر ۳۰ ثانیه به xrdp
-          (
-            while true; do
-              (exec 3<>/dev/tcp/127.0.0.1/3389) 2>/dev/null || true
-              exec 3>&- 2>/dev/null || true
-              sleep 30
-            done
-          ) &
-
+          # Initial startup.
           if ! start_bore; then
-            echo "ERROR: Could not start bore."
-            cat "$OUT_LOG" "$ERR_LOG" || true
-            exit 1
+              echo "Initial Bore startup failed."
+              exit 1
           fi
 
+          # Monitor Bore and restart if necessary.
           while true; do
-            sleep 30
-            if ! kill -0 "$(cat bore.pid 2>/dev/null)" 2>/dev/null; then
-              echo "Bore stopped. Restarting..."
-              start_bore || echo "restart failed"
-            fi
+
+              sleep 15
+
+              CURRENT_PID=$(cat "$PID_FILE" 2>/dev/null || true)
+
+              if [[ ! "$CURRENT_PID" =~ ^[0-9]+$ ]] ||
+                 ! kill -0 "$CURRENT_PID" 2>/dev/null; then
+
+                  echo "Bore disconnected. Restarting..."
+
+                  rm -f connection.txt
+
+                  if ! start_bore; then
+                      echo "Bore restart failed. Retrying in 10 seconds."
+                      sleep 10
+                  fi
+
+              fi
+
           done
           EOF
+
           chmod +x bore_runner.sh
-          echo "bore_runner.sh created."
 
-      # ------------------------------------------------------------------
-      # 3) اجرای detached bore runner
-      # ------------------------------------------------------------------
-      - name: Start bore tunnel (detached)
+          echo "Bore runner created."
+
+      # ============================================================
+      # 4. START BORE TUNNEL
+      # ============================================================
+
+      - name: Start Bore tunnel
         shell: bash
+
         run: |
-          set -euo pipefail
-          rm -f connection.txt bore_out.log bore_err.log bore.pid
+          set -Eeuo pipefail
 
-          nohup ./bore_runner.sh > bore_runner.log 2>&1 &
+          rm -f connection.txt connection.txt.tmp
+          rm -f bore.pid bore_out.log
+
+          nohup ./bore_runner.sh \
+            > bore_runner.log 2>&1 &
+
           echo $! > bore_runner.pid
-          echo "Bore runner started in background (pid $(cat bore_runner.pid))."
 
-          echo "Waiting for tunnel to be ready..."
-          for i in $(seq 1 30); do
-            if [ -f connection.txt ]; then break; fi
+          echo "Waiting for Bore tunnel..."
+
+          READY=0
+
+          for i in $(seq 1 60); do
+
+            if [ -f connection.txt ]; then
+
+              HOST=$(grep '^host=' connection.txt |
+                cut -d= -f2)
+
+              PORT=$(grep '^port=' connection.txt |
+                cut -d= -f2)
+
+              if [ -n "$HOST" ] && [ -n "$PORT" ]; then
+                READY=1
+                break
+              fi
+
+            fi
+
+            if ! kill -0 "$(cat bore_runner.pid)" 2>/dev/null; then
+              echo "ERROR: Bore runner exited."
+              cat bore_runner.log || true
+              exit 1
+            fi
+
             sleep 1
+
           done
-          if [ -f connection.txt ]; then
-            echo "Tunnel is ready:"; cat connection.txt
-          else
-            echo "WARNING: Tunnel may not have started. Will try to continue."
-            echo "--- bore_runner.log ---"; cat bore_runner.log || true
-            echo "--- bore_out.log ---";    cat bore_out.log || true
-            echo "--- bore_err.log ---";    cat bore_err.log || true
+
+          if [ "$READY" -ne 1 ]; then
+
+            echo "ERROR: Tunnel startup failed."
+
+            cat bore_runner.log || true
+            cat bore_out.log || true
+
+            exit 1
           fi
 
-      # ------------------------------------------------------------------
-      # 4) به‌روزرسانی README
-      # ------------------------------------------------------------------
+          echo "Bore tunnel is ready."
+
+          cat connection.txt
+
+      # ============================================================
+      # 5. VERIFY XFCE CONFIGURATION
+      # ============================================================
+
+      - name: Verify desktop environment
+        shell: bash
+
+        run: |
+          set -Eeuo pipefail
+
+          echo "Checking desktop environment..."
+
+          echo "Installed XFCE packages:"
+
+          dpkg-query -W \
+            -f='${binary:Package} ${Status}\n' \
+            'xfce4*' \
+            'xfconf*' \
+            'xorgxrdp' \
+            'xrdp' 2>/dev/null || true
+
+          echo ""
+          echo "Checking D-Bus..."
+
+          if ! command -v dbus-run-session >/dev/null; then
+            echo "ERROR: dbus-run-session unavailable."
+            exit 1
+          fi
+
+          # Test that a new D-Bus session can start.
+          if ! dbus-run-session -- sh -c 'test -n "$DBUS_SESSION_BUS_ADDRESS"'; then
+            echo "ERROR: D-Bus session initialization failed."
+            exit 1
+          fi
+
+          echo "D-Bus session initialization: OK"
+
+          echo ""
+          echo "Checking XFCE configuration..."
+
+          test -d /etc/xdg/xfce4
+          test -x /usr/bin/startxfce4
+          test -x /usr/bin/xfce4-session
+
+          echo "XFCE installation: OK"
+
+          echo ""
+          echo "Checking XRDP..."
+
+          sudo systemctl is-active xrdp
+          sudo systemctl is-active xrdp-sesman
+
+          sudo ss -lntp | grep ':3389'
+
+          echo ""
+          echo "Desktop environment verification completed."
+
+      # ============================================================
+      # 6. UPDATE README
+      # ============================================================
+
       - name: Update README.md
         shell: bash
+
         env:
           OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
+          SESSION_MINUTES: ${{ github.event.inputs.session_minutes }}
+
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
+
           if [ ! -f connection.txt ]; then
-            echo "ERROR: connection.txt not found."
+            echo "ERROR: connection.txt missing."
             exit 1
           fi
 
           HOST=$(grep '^host=' connection.txt | cut -d= -f2)
           PORT=$(grep '^port=' connection.txt | cut -d= -f2)
+
           CONNECTION_STRING="${HOST}:${PORT}"
 
-          USERNAME="$OPENCODE_BASIC_USER"
-          EXPIRY=$(date -u -d "+${{ github.event.inputs.session_minutes }} minutes" '+%Y-%m-%d %H:%M:%S UTC')
+          EXPIRY=$(date -u \
+            -d "+${SESSION_MINUTES} minutes" \
+            '+%Y-%m-%d %H:%M:%S UTC')
 
-          NEW_SECTION="## Ubuntu RDP Access
+          TMP_SECTION=$(mktemp)
+
+          cat > "$TMP_SECTION" <<EOF
+          ## Ubuntu RDP Access
+
           **Connection Address:** \`$CONNECTION_STRING\`
-          **Username:** \`$USERNAME\`
+
+          **Username:** \`$OPENCODE_BASIC_USER\`
+
           **Password:** (stored in GitHub Secrets: \`OPENCODE_BASIC_PASS\`)
+
           **Expires:** $EXPIRY
-          "
+
+          EOF
 
           if [ ! -f README.md ]; then
-            printf '%s\n' "$NEW_SECTION" > README.md
-          else
-            if grep -q '## Ubuntu RDP Access' README.md; then
-              awk '/^## Ubuntu RDP Access/ {exit} {print}' README.md > README.tmp
-              printf '%s\n' "$NEW_SECTION" >> README.tmp
-              mv README.tmp README.md
-            else
-              printf '\n%s\n' "$NEW_SECTION" >> README.md
-            fi
+            touch README.md
           fi
-          echo "README.md updated."
 
-      # ------------------------------------------------------------------
-      # 5) commit + push
-      # ------------------------------------------------------------------
-      - name: Commit and push README.md
+          TMP_README=$(mktemp)
+
+          if grep -q '^## Ubuntu RDP Access' README.md; then
+
+            awk '
+              /^## Ubuntu RDP Access/ { exit }
+              { print }
+            ' README.md > "$TMP_README"
+
+          else
+
+            cat README.md > "$TMP_README"
+
+          fi
+
+          printf '\n' >> "$TMP_README"
+
+          cat "$TMP_SECTION" >> "$TMP_README"
+
+          mv "$TMP_README" README.md
+
+          rm -f "$TMP_SECTION"
+
+          echo "README updated."
+
+      # ============================================================
+      # 7. COMMIT README
+      # ============================================================
+
+      - name: Commit and push README
         shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git commit -m "Update RDP access info [skip ci]" --allow-empty
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ------------------------------------------------------------------
-      # 6) نمایش اطلاعات
-      # ------------------------------------------------------------------
+        run: |
+          set -Eeuo pipefail
+
+          git config user.name "github-actions[bot]"
+
+          git config user.email \
+            "github-actions[bot]@users.noreply.github.com"
+
+          git add README.md
+
+          if git diff --cached --quiet; then
+            echo "README has no changes."
+          else
+            git commit -m "Update RDP access info [skip ci]"
+            git push
+          fi
+
+      # ============================================================
+      # 8. DISPLAY CONNECTION INFORMATION
+      # ============================================================
+
       - name: Display connection info
         shell: bash
+
         env:
           OPENCODE_BASIC_USER: ${{ secrets.OPENCODE_BASIC_USER }}
+
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
+
           HOST=$(grep '^host=' connection.txt | cut -d= -f2)
           PORT=$(grep '^port=' connection.txt | cut -d= -f2)
-          echo ""
-          echo "======================================================"
-          echo "  UBUNTU RDP READY FOR ANDROID"
-          echo "======================================================"
-          echo "  Host: $HOST"
-          echo "  Port: $PORT"
-          echo "  Username: $OPENCODE_BASIC_USER"
-          echo "  Password: (your secret OPENCODE_BASIC_PASS)"
-          echo "======================================================"
-          echo ""
-          echo "In Microsoft Remote Desktop on Android:"
-          echo "  PC Name: $HOST:$PORT"
-          echo "  User Name: $OPENCODE_BASIC_USER"
 
-      # ------------------------------------------------------------------
-      # 7) keep-alive
-      # ------------------------------------------------------------------
+          echo ""
+          echo "=================================================="
+          echo "             UBUNTU RDP READY"
+          echo "=================================================="
+          echo ""
+          echo "Host:     $HOST"
+          echo "Port:     $PORT"
+          echo "Username: $OPENCODE_BASIC_USER"
+          echo "Password: GitHub Secret OPENCODE_BASIC_PASS"
+          echo ""
+          echo "--------------------------------------------------"
+          echo "Microsoft Remote Desktop configuration:"
+          echo ""
+          echo "PC Name:  $HOST:$PORT"
+          echo "Username: $OPENCODE_BASIC_USER"
+          echo ""
+          echo "=================================================="
+
+      # ============================================================
+      # 9. KEEP SESSION ALIVE
+      # ============================================================
+
       - name: Keep session alive
         shell: bash
+
+        env:
+          SESSION_MINUTES: ${{ github.event.inputs.session_minutes }}
+
         run: |
-          set -euo pipefail
-          DURATION=${{ github.event.inputs.session_minutes }}
-          END_TIME=$(( $(date +%s) + DURATION*60 ))
-          echo "Session will stay active for $DURATION minutes."
+          set -Eeuo pipefail
+
+          DURATION="$SESSION_MINUTES"
+
+          END_TIME=$(( $(date +%s) + DURATION * 60 ))
+
+          echo "Session duration: $DURATION minutes."
+
           while [ "$(date +%s)" -lt "$END_TIME" ]; do
+
             NOW=$(date +%s)
+
             REMAIN=$(( END_TIME - NOW ))
-            printf 'Remaining %02d:%02d:%02d | %s\n' \
-              $((REMAIN/3600)) $(((REMAIN%3600)/60)) $((REMAIN%60)) "$(date -u +%H:%M:%S)"
-            sleep 60
+
+            HOURS=$(( REMAIN / 3600 ))
+            MINUTES=$(( (REMAIN % 3600) / 60 ))
+            SECONDS=$(( REMAIN % 60 ))
+
+            printf \
+              'Remaining %02d:%02d:%02d | UTC: %s\n' \
+              "$HOURS" \
+              "$MINUTES" \
+              "$SECONDS" \
+              "$(date -u +%H:%M:%S)"
+
+            # Make sure XRDP remains active.
+            if ! sudo systemctl is-active --quiet xrdp; then
+              echo "WARNING: XRDP stopped. Restarting..."
+              sudo systemctl restart xrdp
+            fi
+
+            # Make sure the Bore runner is alive.
+            if ! kill -0 "$(cat bore_runner.pid)" 2>/dev/null; then
+              echo "ERROR: Bore runner stopped."
+              exit 1
+            fi
+
+            sleep 30
+
           done
-          echo "Time is up."
+
+          echo ""
+          echo "Session duration completed."
+
+      # ============================================================
+      # 10. CLEANUP
+      # ============================================================
+
+      - name: Cleanup
+        if: always()
+        shell: bash
+
+        run: |
+          echo "Cleaning up..."
+
+          if [ -f bore.pid ]; then
+            kill "$(cat bore.pid)" 2>/dev/null || true
+          fi
+
+          if [ -f bore_runner.pid ]; then
+            kill "$(cat bore_runner.pid)" 2>/dev/null || true
+          fi
+
+          sudo systemctl stop xrdp 2>/dev/null || true
+          sudo systemctl stop xrdp-sesman 2>/dev/null || true
+
+          echo "Cleanup completed."
